@@ -18,7 +18,7 @@ dependency boundary justifies extracting another crate.
 - `src/live/` reads `.als` data and must not depend on UI or filesystem APIs.
 - Future `src/note/`, `src/mapping/`, and `src/diagnostics/` modules remain
   platform-neutral.
-- `examples/` contains developer tools, not product interfaces.
+- `src/tools/` contains developer targets, not product interfaces.
 - Future browser and Tauri adapters depend inward on the library.
 
 Keep platform-specific file access outside the library. Prefer byte or `Read`-based

@@ -22,8 +22,8 @@ src/
   lib.rs      Public library surface
   model.rs    Platform-neutral domain and inspection models
   live/       Ableton Live archive and XML inspection
-examples/
-  inspect.rs  Developer inspection utility
+  tools/
+    inspect.rs  Developer inspection utility
 docs/
   implementation-plan.md
 ```

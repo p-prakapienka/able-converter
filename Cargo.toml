@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 repository = "https://github.com/p-prakapienka/able-converter"
 
+[[example]]
+name = "inspect"
+path = "src/tools/inspect.rs"
+
 [dependencies]
 flate2 = "1"
 quick-xml = "0.38"

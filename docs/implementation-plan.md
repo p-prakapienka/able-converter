@@ -37,8 +37,8 @@ src/
   note/
   mapping/
   diagnostics.rs
-examples/
-  inspect.rs
+  tools/
+    inspect.rs
 web/          future browser frontend and WebAssembly adapter
 src-tauri/    future desktop adapter
 ```
