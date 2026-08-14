@@ -4,8 +4,8 @@ use std::io::{BufReader, Read};
 
 use flate2::read::GzDecoder;
 use mapper_model::{ClipCounts, LiveFormatVersion, LiveSetInspection, TrackCounts};
-use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
+use quick_xml::events::{BytesStart, Event};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -169,7 +169,9 @@ fn classify_clip(
 fn attribute(element: &BytesStart<'_>, key: &[u8]) -> Result<Option<String>, LiveReadError> {
     for attribute in element.attributes().with_checks(false).flatten() {
         if attribute.key.as_ref() == key {
-            return Ok(Some(std::str::from_utf8(attribute.value.as_ref())?.to_owned()));
+            return Ok(Some(
+                std::str::from_utf8(attribute.value.as_ref())?.to_owned(),
+            ));
         }
     }
 
@@ -180,7 +182,7 @@ fn attribute(element: &BytesStart<'_>, key: &[u8]) -> Result<Option<String>, Liv
 mod tests {
     use std::io::Write;
 
-    use flate2::{write::GzEncoder, Compression};
+    use flate2::{Compression, write::GzEncoder};
 
     use super::inspect_als;
 

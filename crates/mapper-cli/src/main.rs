@@ -6,7 +6,11 @@ use clap::{Parser, Subcommand};
 use mapper_model::LiveSetInspection;
 
 #[derive(Debug, Parser)]
-#[command(name = "able-converter", version, about = "Inspect and convert Ableton projects")]
+#[command(
+    name = "able-converter",
+    version,
+    about = "Inspect and convert Ableton projects"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
