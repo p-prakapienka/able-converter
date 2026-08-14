@@ -1,0 +1,11 @@
+[package]
+name = "mapper-model"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+
+[lints]
+workspace = true
