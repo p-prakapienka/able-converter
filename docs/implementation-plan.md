@@ -32,13 +32,27 @@ extract crates only when a real build-target or dependency constraint appears.
 ```text
 src/
   lib.rs
-  model.rs
-  live/
-  note/
-  mapping/
-  diagnostics.rs
+  model/
+    Live.rs
+    Internal.rs
+    Note.rs                 added with the Note writer
+    *Tests.rs
+    mod.rs
+  parser/
+    LiveParser.rs
+    *Tests.rs
+    mod.rs
+  mapper/
+    LiveToInternalMapper.rs
+    InternalToNoteMapper.rs
+    *Tests.rs
+    mod.rs
+  exporter/
+    NoteExporter.rs
+    *Tests.rs
+    mod.rs
   tools/
-    inspect.rs
+    Inspect.rs
 web/          future browser frontend and WebAssembly adapter
 src-tauri/    future desktop adapter
 ```
@@ -46,6 +60,15 @@ src-tauri/    future desktop adapter
 The library accepts bytes or `Read` implementations and returns typed data. It must
 not depend on browser, Tauri, or native filesystem APIs. Platform adapters provide
 files and implement sample resolution.
+
+Implementation and test filenames use UpperCamelCase for Java-style discoverability.
+Folders and Rust module identifiers remain lowercase snake_case. `mod.rs` files use
+explicit `#[path]` declarations to connect the two conventions without disabling
+Rust naming lints.
+
+Add files only when they contain real implementation. For example, `Caustic.rs` and
+its parser belong under these same boundaries when Caustic work begins, not as empty
+placeholders today.
 
 ## Canonical model
 
@@ -62,6 +85,23 @@ a canonical project model containing:
 
 Musical positions are represented in quarter-note beats. Format-specific numeric
 representations are converted only at input and output boundaries.
+
+The concrete conversion pipeline is:
+
+```text
+.als bytes
+  -> parser/live
+  -> model/live
+  -> mapper/live_to_internal
+  -> model/internal
+  -> mapper/internal_to_note
+  -> model/note
+  -> exporter/note
+  -> .ablbundle bytes
+```
+
+This avoids pairwise mappers such as `LiveNoteMapper`. A future Caustic importer only
+needs `CausticParser` and `CausticToInternalMapper`; the Note half is reused.
 
 ## Format discovery
 

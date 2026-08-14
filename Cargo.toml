@@ -6,7 +6,7 @@ repository = "https://github.com/p-prakapienka/able-converter"
 
 [[example]]
 name = "inspect"
-path = "src/tools/inspect.rs"
+path = "src/tools/Inspect.rs"
 
 [dependencies]
 flate2 = "1"

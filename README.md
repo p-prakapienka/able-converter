@@ -19,14 +19,26 @@ without extracting it to disk.
 
 ```text
 src/
-  lib.rs      Public library surface
-  model.rs    Platform-neutral domain and inspection models
-  live/       Ableton Live archive and XML inspection
+  lib.rs
+  model/
+    Live.rs            Ableton Live source models
+    Internal.rs        Canonical format-neutral model
+    InternalTests.rs
+    mod.rs
+  parser/
+    LiveParser.rs      Ableton Live GZIP/XML inspection
+    LiveParserTests.rs
+    mod.rs
   tools/
-    inspect.rs  Developer inspection utility
+    Inspect.rs         Developer inspection utility
 docs/
   implementation-plan.md
 ```
+
+As conversion is implemented, `mapper/`, `exporter/`, and destination model files
+will be added without splitting the project into crates prematurely. CamelCase
+filenames provide Java-style scanability; their Rust module names stay idiomatic
+snake_case.
 
 The planned browser build will compile the Rust conversion library to WebAssembly.
 The planned desktop build will call the same library natively from Tauri.

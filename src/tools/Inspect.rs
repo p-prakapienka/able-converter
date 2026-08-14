@@ -4,8 +4,8 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::path::PathBuf;
 
-use able_converter::live::inspect_als;
-use able_converter::model::LiveSetInspection;
+use able_converter::model::live::LiveSetInspection;
+use able_converter::parser::live::inspect_als;
 
 fn main() {
     if let Err(error) = run() {
