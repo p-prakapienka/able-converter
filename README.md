@@ -23,11 +23,11 @@ src/
   model/
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
-    InternalTests.rs
+    InternalTest.rs
     mod.rs
   parser/
     LiveParser.rs      Ableton Live GZIP/XML inspection
-    LiveParserTests.rs
+    LiveParserTest.rs
     mod.rs
   tools/
     Inspect.rs         Developer inspection utility
@@ -41,7 +41,9 @@ filenames provide Java-style scanability; their Rust module names stay idiomatic
 snake_case.
 
 The planned browser build will compile the Rust conversion library to WebAssembly.
-The planned desktop build will call the same library natively from Tauri.
+The planned desktop build will call the same library natively from Tauri. Their
+adapters will live in `src/web/` and `src/desktop/`, keeping application code under
+`src/`.
 
 ## Inspecting a Set during development
 

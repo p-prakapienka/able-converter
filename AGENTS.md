@@ -20,7 +20,7 @@ dependency boundary justifies extracting another crate.
   model to destination models.
 - `src/exporter/` serializes destination models into project bytes.
 - `src/tools/` contains developer targets, not product interfaces.
-- Future browser and Tauri adapters depend inward on the library.
+- Future `src/web/` and `src/desktop/` adapters depend inward on the library.
 
 Keep platform-specific file access outside the library. Prefer byte or `Read`-based
 APIs and explicit sample-resolver interfaces.
@@ -43,8 +43,10 @@ canonical internal model.
   `LiveParser.rs`, and `NoteExporter.rs`.
 - Connect CamelCase paths to snake_case Rust module names with explicit `#[path]`
   declarations in the nearest `mod.rs`; do not suppress naming lints globally.
-- Put tests in separate sibling files such as `LiveParserTests.rs` and register
+- Put tests in separate sibling files such as `LiveParserTest.rs` and register
   them with `#[cfg(test)]` from the nearest `mod.rs`.
+- Keep application code under `src/`; use `src/web/` for the browser adapter and
+  `src/desktop/` for the Tauri adapter.
 - Create future format, mapper, and exporter files only when implementation begins.
 
 ## Conversion rules

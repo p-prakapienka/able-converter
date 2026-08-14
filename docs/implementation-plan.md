@@ -36,25 +36,25 @@ src/
     Live.rs
     Internal.rs
     Note.rs                 added with the Note writer
-    *Tests.rs
+    *Test.rs
     mod.rs
   parser/
     LiveParser.rs
-    *Tests.rs
+    *Test.rs
     mod.rs
   mapper/
     LiveToInternalMapper.rs
     InternalToNoteMapper.rs
-    *Tests.rs
+    *Test.rs
     mod.rs
   exporter/
     NoteExporter.rs
-    *Tests.rs
+    *Test.rs
     mod.rs
   tools/
     Inspect.rs
-web/          future browser frontend and WebAssembly adapter
-src-tauri/    future desktop adapter
+  web/                     future browser frontend and WebAssembly adapter
+  desktop/                 future Tauri desktop adapter
 ```
 
 The library accepts bytes or `Read` implementations and returns typed data. It must

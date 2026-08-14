@@ -7,5 +7,5 @@ pub mod internal;
 pub mod live;
 
 #[cfg(test)]
-#[path = "InternalTests.rs"]
-mod internal_tests;
+#[path = "InternalTest.rs"]
+mod internal_test;

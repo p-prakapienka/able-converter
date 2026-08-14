@@ -11,7 +11,7 @@ fn gzip(xml: &str) -> Vec<u8> {
 }
 
 #[test]
-fn inspects_tracks_clips_version_and_tempo() {
+fn inspect_als_reads_tracks_clips_version_and_tempo() {
     let xml = r#"
         <Ableton MajorVersion="5" MinorVersion="12.0_123"
                  Creator="Ableton Live 12.1" Revision="abc123">
