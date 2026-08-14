@@ -1,55 +1,38 @@
+use std::env;
 use std::error::Error;
+use std::ffi::OsStr;
+use std::fs::File;
 use std::path::PathBuf;
-use std::process::ExitCode;
 
-use clap::{Parser, Subcommand};
-use mapper_model::LiveSetInspection;
+use able_converter::live::inspect_als;
+use able_converter::model::LiveSetInspection;
 
-#[derive(Debug, Parser)]
-#[command(
-    name = "able-converter",
-    version,
-    about = "Inspect and convert Ableton projects"
-)]
-struct Cli {
-    #[command(subcommand)]
-    command: Command,
-}
-
-#[derive(Debug, Subcommand)]
-enum Command {
-    /// Inspect the high-level structure of an Ableton Live Set.
-    Inspect {
-        /// Path to a gzip-compressed Ableton Live Set.
-        path: PathBuf,
-        /// Emit the report as JSON.
-        #[arg(long)]
-        json: bool,
-    },
-}
-
-fn main() -> ExitCode {
-    match run() {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(error) => {
-            eprintln!("error: {error}");
-            ExitCode::FAILURE
-        }
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("error: {error}");
+        std::process::exit(1);
     }
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let cli = Cli::parse();
+    let mut path = None;
+    let mut json = false;
 
-    match cli.command {
-        Command::Inspect { path, json } => {
-            let report = mapper_core::inspect_als_path(path)?;
-            if json {
-                println!("{}", serde_json::to_string_pretty(&report)?);
-            } else {
-                print_human_report(&report);
-            }
+    for argument in env::args_os().skip(1) {
+        if argument == OsStr::new("--json") {
+            json = true;
+        } else if path.replace(PathBuf::from(argument)).is_some() {
+            return Err("expected one .als path".into());
         }
+    }
+
+    let path = path.ok_or("usage: cargo run --example inspect -- <project.als> [--json]")?;
+    let report = inspect_als(File::open(path)?)?;
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        print_human_report(&report);
     }
 
     Ok(())

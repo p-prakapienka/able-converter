@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Format adapters are responsible for converting their native time representation
 /// at the boundary. Keeping this wrapper explicit prevents accidental mixing with
-/// seconds or raw XML values.
+/// seconds or raw format values.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Beat(pub f64);

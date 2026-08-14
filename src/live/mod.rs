@@ -3,10 +3,11 @@
 use std::io::{BufReader, Read};
 
 use flate2::read::GzDecoder;
-use mapper_model::{ClipCounts, LiveFormatVersion, LiveSetInspection, TrackCounts};
 use quick_xml::Reader;
 use quick_xml::events::{BytesStart, Event};
 use thiserror::Error;
+
+use crate::model::{ClipCounts, LiveFormatVersion, LiveSetInspection, TrackCounts};
 
 #[derive(Debug, Error)]
 pub enum LiveReadError {

@@ -3,19 +3,26 @@
 ## Purpose
 
 Able Converter maps selected Ableton Live Set content into Ableton Note projects.
-The conversion core must remain usable from the CLI, WebAssembly, and a native
-desktop adapter.
+The conversion library must remain usable from WebAssembly and a native desktop
+adapter.
+
+See `docs/implementation-plan.md` for product scope, format strategy, and delivery
+milestones. Update it when an architectural or scope decision changes.
 
 ## Architecture
 
-- `mapper-model` owns platform-neutral domain types.
-- `mapper-live` reads `.als` data and must not depend on UI or filesystem APIs.
-- `mapper-core` orchestrates inspection and conversion use cases.
-- `mapper-cli` is a thin native adapter.
-- Future Note, WebAssembly, and Tauri crates must depend inward on these layers.
+The project starts as one Rust crate. Use ordinary modules until a real target or
+dependency boundary justifies extracting another crate.
 
-Keep platform-specific file access outside the conversion core. Prefer byte or
-`Read`-based APIs and explicit sample-resolver interfaces.
+- `src/model.rs` owns platform-neutral domain types.
+- `src/live/` reads `.als` data and must not depend on UI or filesystem APIs.
+- Future `src/note/`, `src/mapping/`, and `src/diagnostics/` modules remain
+  platform-neutral.
+- `examples/` contains developer tools, not product interfaces.
+- Future browser and Tauri adapters depend inward on the library.
+
+Keep platform-specific file access outside the library. Prefer byte or `Read`-based
+APIs and explicit sample-resolver interfaces.
 
 ## Conversion rules
 
@@ -33,6 +40,6 @@ Before committing, run:
 
 ```bash
 cargo fmt --all --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
+cargo clippy --all-targets -- -D warnings
+cargo test --all-targets
 ```

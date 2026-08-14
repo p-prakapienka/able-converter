@@ -4,8 +4,8 @@ Able Converter is a local-first tool for inspecting Ableton Live Sets and mappin
 selected clips into Ableton Note projects.
 
 The project is at the format-discovery and parser-foundation stage. The current
-CLI can inspect the high-level structure of a gzip-compressed `.als` file without
-extracting it to disk.
+library can inspect the high-level structure of a gzip-compressed `.als` stream
+without extracting it to disk.
 
 ## Current capabilities
 
@@ -14,34 +14,38 @@ extracting it to disk.
 - Count MIDI, audio, group, return, and main tracks.
 - Distinguish Session, Arrangement, and unclassified MIDI/audio clips.
 - Read the global tempo when represented by Live's `Tempo/Manual` structure.
-- Emit a human-readable or JSON inspection report.
 
-## Workspace
+## Structure
 
 ```text
-crates/
-  mapper-model/   Platform-neutral project and inspection models
-  mapper-live/    Ableton Live archive and XML inspection
-  mapper-core/    Application use cases
-  mapper-cli/     Command-line adapter
+src/
+  lib.rs      Public library surface
+  model.rs    Platform-neutral domain and inspection models
+  live/       Ableton Live archive and XML inspection
+examples/
+  inspect.rs  Developer inspection utility
+docs/
+  implementation-plan.md
 ```
 
-The planned browser build will compile the Rust conversion core to WebAssembly.
-The planned desktop build will call the same core natively from Tauri.
+The planned browser build will compile the Rust conversion library to WebAssembly.
+The planned desktop build will call the same library natively from Tauri.
 
-## Usage
+## Inspecting a Set during development
 
 ```bash
-cargo run -p mapper-cli -- inspect path/to/project.als
-cargo run -p mapper-cli -- inspect path/to/project.als --json
+cargo run --example inspect -- path/to/project.als
+cargo run --example inspect -- path/to/project.als --json
 ```
+
+The inspector is a development utility rather than a supported product CLI.
 
 ## Development
 
 ```bash
 cargo fmt --all --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
+cargo clippy --all-targets -- -D warnings
+cargo test --all-targets
 ```
 
 Only synthetic fixtures belong in this repository. Real Live projects, Ableton
