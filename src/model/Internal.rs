@@ -66,9 +66,37 @@ pub struct MidiClip {
     pub notes: Vec<Note>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TrackKind {
+    Midi,
+    Audio,
+    Group,
+    Return,
+    Main,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Track {
+    pub id: String,
+    pub kind: TrackKind,
+    pub name: String,
+    pub color: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Scene {
+    pub id: String,
+    pub index: usize,
+    pub name: String,
+    pub color: Option<i32>,
+    pub tempoOverride: Option<f64>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Project {
     pub tempo: Option<f64>,
+    pub tracks: Vec<Track>,
+    pub scenes: Vec<Scene>,
     pub midiClips: Vec<MidiClip>,
 }
 
@@ -86,6 +114,8 @@ pub enum DiagnosticCode {
     UnsupportedClipAutomation,
     UnsupportedPerNoteExpression,
     UnsupportedVelocityDeviation,
+    InvalidSceneTempo,
+    UnsupportedSceneTimeSignature,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

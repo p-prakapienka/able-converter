@@ -50,6 +50,9 @@ canonical internal model.
   uses Java naming. Do not suppress any broader warning category.
 - Put tests in separate sibling files such as `LiveParserTest.rs` and register
   them with `#[cfg(test)]` from the nearest `mod.rs`.
+- Keep a public parser facade such as `LiveParser.rs` focused on its parser
+  struct/impl pair. Put its private collaborator objects in a lowercase package
+  folder such as `src/parser/live/`, with one UpperCamelCase file per struct/impl.
 - Keep application code under `src/`; use `src/web/` for the browser adapter and
   `src/desktop/` for the Tauri adapter.
 - Create future format, mapper, and exporter files only when implementation begins.

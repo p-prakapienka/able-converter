@@ -2,9 +2,11 @@
 
 use crate::model::internal::{
     Beat, BeatRange, ClipLoop, ClipSource, Diagnostic, DiagnosticCode, DiagnosticSeverity,
-    MappingResult, MidiClip, Note, Project,
+    MappingResult, MidiClip, Note, Project, Scene, Track, TrackKind,
 };
-use crate::model::live::{LiveMidiClip, LiveMidiNote, LiveProject};
+use crate::model::live::{
+    LiveMidiClip, LiveMidiNote, LiveProject, LiveScene, LiveTrack, LiveTrackKind,
+};
 
 /// Maps one Ableton Live source project into the canonical project model.
 pub struct LiveToInternalMapper<'a> {
@@ -23,6 +25,16 @@ impl<'a> LiveToInternalMapper<'a> {
     #[must_use]
     pub fn map(mut self) -> MappingResult<Project> {
         let source = self.source;
+        let tracks = source
+            .tracks
+            .iter()
+            .map(|track| self.mapTrack(track))
+            .collect();
+        let scenes = source
+            .scenes
+            .iter()
+            .map(|scene| self.mapScene(scene))
+            .collect();
         let mut midiClips = Vec::new();
 
         for clip in &source.sessionMidiClips {
@@ -35,9 +47,71 @@ impl<'a> LiveToInternalMapper<'a> {
         MappingResult {
             value: Project {
                 tempo: source.inspection.tempo,
+                tracks,
+                scenes,
                 midiClips,
             },
             diagnostics: self.diagnostics,
+        }
+    }
+
+    fn mapTrack(&self, track: &LiveTrack) -> Track {
+        let name = if track.userName.trim().is_empty() {
+            track.effectiveName.clone()
+        } else {
+            track.userName.clone()
+        };
+
+        Track {
+            id: track.id.clone(),
+            kind: match track.kind {
+                LiveTrackKind::Midi => TrackKind::Midi,
+                LiveTrackKind::Audio => TrackKind::Audio,
+                LiveTrackKind::Group => TrackKind::Group,
+                LiveTrackKind::Return => TrackKind::Return,
+                LiveTrackKind::Main => TrackKind::Main,
+            },
+            name,
+            color: track.color,
+        }
+    }
+
+    fn mapScene(&mut self, scene: &LiveScene) -> Scene {
+        let tempoOverride = if scene.tempoEnabled {
+            match scene.tempo {
+                Some(tempo) if tempo.is_finite() && tempo > 0.0 => Some(tempo),
+                _ => {
+                    self.error(
+                        scene.id.clone(),
+                        DiagnosticCode::InvalidSceneTempo,
+                        "enabled scene tempo must be a finite positive number",
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
+        if scene.timeSignatureEnabled {
+            let sourceValue = scene
+                .timeSignatureId
+                .map_or_else(|| "missing".to_owned(), |value| value.to_string());
+            self.warning(
+                scene.id.clone(),
+                DiagnosticCode::UnsupportedSceneTimeSignature,
+                format!(
+                    "scene time-signature identifier {sourceValue} is preserved only in the Live source model"
+                ),
+            );
+        }
+
+        Scene {
+            id: scene.id.clone(),
+            index: scene.index,
+            name: scene.name.clone(),
+            color: scene.color,
+            tempoOverride,
         }
     }
 

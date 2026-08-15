@@ -39,8 +39,13 @@ src/
     *Test.rs
     mod.rs
   parser/
-    LiveParser.rs
+    LiveParser.rs             public parser facade only
     *Test.rs
+    live/                     private Live parser collaborators
+      InspectionBuilder.rs
+      ProjectMetadataParser.rs
+      SessionParser.rs
+      ...                     one struct/impl per file
     mod.rs
   mapper/
     LiveToInternalMapper.rs
@@ -74,6 +79,11 @@ remain data-oriented. Behavior belonging to an architectural object stays in pri
 methods on that object; module-level functions are reserved for operations genuinely
 independent of every object in the module. Traits are introduced only for real
 substitution or dependency boundaries.
+
+Public parser facade files contain only their parser struct/impl pair. Private state
+objects and builders live in a lowercase source-specific package folder, one
+UpperCamelCase file per struct/impl. Their fields remain private and collaboration is
+through package-visible methods rather than direct cross-object mutation.
 
 Add files only when they contain real implementation. For example, `Caustic.rs` and
 its parser belong under these same boundaries when Caustic work begins, not as empty
@@ -272,9 +282,12 @@ Acceptance: inspect a real Live 11/12 Set without materializing its XML to disk.
 
 - Parse Session track and scene placement, MIDI clips, notes, velocity, probability,
   enabled state, and loops. Initial implementation complete with synthetic tests.
+- Parse track identity, type, effective/user names, color, and ordered scene metadata.
+  Initial implementation complete with synthetic tests for Live 11/12 field variants.
 - Populate the canonical model. Initial Live-to-internal mapper complete.
 - Report unsupported note expression, velocity deviation, and automation. Initial
-  diagnostics complete.
+  diagnostics complete. Enabled scene time signatures remain source-only and produce
+  a diagnostic until their identifiers have verified musical semantics.
 
 Acceptance: golden tests reproduce the musical content of paired Session fixtures.
 
@@ -316,5 +329,6 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ## Current next step
 
-Validate Session extraction against minimal sets saved by Live 11 and Live 12, then
-add track names and explicit scene metadata before beginning the Note writer.
+Validate Session extraction, track names, and scene metadata against minimal sets
+saved by Live 11 and Live 12. Then begin paired-fixture discovery of the minimal Note
+JSON and bundle structure.

@@ -63,6 +63,77 @@ fn rejectsNonAbletonXml() {
 }
 
 #[test]
+fn parserReadsTrackNamesAndExplicitSceneMetadata() {
+    let xml = r#"
+        <Ableton MajorVersion="5" MinorVersion="12.0_123" Creator="Ableton Live 12">
+          <LiveSet>
+            <Tracks>
+              <MidiTrack Id="42">
+                <Name>
+                  <EffectiveName Value="1-MIDI" />
+                  <UserName Value="Bass" />
+                </Name>
+                <Color Value="10" />
+                <DeviceChain><Instrument><Name Value="Must not replace track name" /></Instrument></DeviceChain>
+              </MidiTrack>
+              <AudioTrack Id="43">
+                <Name>
+                  <EffectiveName Value="2-Audio" />
+                  <UserName Value="" />
+                </Name>
+                <Color Value="11" />
+              </AudioTrack>
+            </Tracks>
+            <Scenes>
+              <Scene Id="9">
+                <Name Value="Intro" />
+                <Color Value="5" />
+                <Tempo Value="128" />
+                <IsTempoEnabled Value="true" />
+                <TimeSignatureId Value="201" />
+                <IsTimeSignatureEnabled Value="true" />
+              </Scene>
+              <Scene Id="12">
+                <Name Value="Verse" />
+                <ColorIndex Value="6" />
+                <Tempo Value="120" />
+                <TempoEnabled Value="false" />
+                <TimeSignatureId Value="202" />
+                <TimeSignatureEnabled Value="false" />
+              </Scene>
+            </Scenes>
+          </LiveSet>
+        </Ableton>
+    "#;
+
+    let project = LiveParser::new(gzip(xml).as_slice())
+        .parse()
+        .expect("parse metadata fixture");
+
+    assert_eq!(project.tracks.len(), 2);
+    assert_eq!(project.tracks[0].id, "42");
+    assert_eq!(project.tracks[0].effectiveName, "1-MIDI");
+    assert_eq!(project.tracks[0].userName, "Bass");
+    assert_eq!(project.tracks[0].color, Some(10));
+    assert_eq!(project.tracks[1].effectiveName, "2-Audio");
+    assert_eq!(project.tracks[1].userName, "");
+
+    assert_eq!(project.scenes.len(), 2);
+    assert_eq!(project.scenes[0].id, "9");
+    assert_eq!(project.scenes[0].index, 0);
+    assert_eq!(project.scenes[0].name, "Intro");
+    assert_eq!(project.scenes[0].color, Some(5));
+    assert_eq!(project.scenes[0].tempo, Some(128.0));
+    assert!(project.scenes[0].tempoEnabled);
+    assert_eq!(project.scenes[0].timeSignatureId, Some(201));
+    assert!(project.scenes[0].timeSignatureEnabled);
+    assert_eq!(project.scenes[1].index, 1);
+    assert_eq!(project.scenes[1].color, Some(6));
+    assert!(!project.scenes[1].tempoEnabled);
+    assert!(!project.scenes[1].timeSignatureEnabled);
+}
+
+#[test]
 fn parserReadsSessionClipNotesAndLoop() {
     let xml = r#"
         <Ableton MajorVersion="5" MinorVersion="11.0_11300" Creator="Ableton Live 11">

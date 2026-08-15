@@ -40,7 +40,39 @@ pub struct LiveSetInspection {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LiveProject {
     pub inspection: LiveSetInspection,
+    pub tracks: Vec<LiveTrack>,
+    pub scenes: Vec<LiveScene>,
     pub sessionMidiClips: Vec<LiveMidiClip>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum LiveTrackKind {
+    Midi,
+    Audio,
+    Group,
+    Return,
+    Main,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LiveTrack {
+    pub id: String,
+    pub kind: LiveTrackKind,
+    pub effectiveName: String,
+    pub userName: String,
+    pub color: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LiveScene {
+    pub id: String,
+    pub index: usize,
+    pub name: String,
+    pub color: Option<i32>,
+    pub tempo: Option<f64>,
+    pub tempoEnabled: bool,
+    pub timeSignatureId: Option<i32>,
+    pub timeSignatureEnabled: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
