@@ -1,4 +1,4 @@
-#[path = "LiveParser.rs"]
+#[path = "live/mod.rs"]
 pub mod live;
 
 #[cfg(test)]

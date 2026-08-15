@@ -16,8 +16,12 @@ without extracting it to disk.
 - Read the global tempo when represented by Live's `Tempo/Manual` structure.
 - Parse Session clip placement, bounds, loop settings, notes, velocity, probability,
   release velocity, and enabled state into a Live-specific source model.
+- Parse track identifiers, types, effective/user names, colors, and ordered Session
+  scene names, colors, tempo flags, and time-signature identifiers.
 - Map Session clips into the canonical model with explicit diagnostics for invalid
   data and unsupported expression or automation.
+- Resolve canonical track names and scene tempo overrides while reporting enabled,
+  not-yet-decoded scene time signatures.
 
 ## Structure
 
@@ -30,8 +34,9 @@ src/
     InternalTest.rs
     mod.rs
   parser/
-    LiveParser.rs      Ableton Live GZIP/XML inspection
+    LiveParser.rs      Public Ableton Live parser facade
     LiveParserTest.rs
+    live/              Private parser state objects and builders
     mod.rs
   mapper/
     LiveToInternalMapper.rs

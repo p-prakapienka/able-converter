@@ -1,7 +1,7 @@
-use crate::model::internal::{ClipSource, DiagnosticCode, DiagnosticSeverity};
+use crate::model::internal::{ClipSource, DiagnosticCode, DiagnosticSeverity, TrackKind};
 use crate::model::live::{
-    ClipCounts, LiveFormatVersion, LiveLoop, LiveMidiClip, LiveMidiNote, LiveProject,
-    LiveSetInspection, TrackCounts,
+    ClipCounts, LiveFormatVersion, LiveLoop, LiveMidiClip, LiveMidiNote, LiveProject, LiveScene,
+    LiveSetInspection, LiveTrack, LiveTrackKind, TrackCounts,
 };
 
 use super::livetointernal::LiveToInternalMapper;
@@ -25,6 +25,14 @@ fn mapsSessionClipAndReportsLossyFeatures() {
 
     let result = LiveToInternalMapper::new(&source).map();
 
+    assert_eq!(result.value.tracks.len(), 2);
+    assert_eq!(result.value.tracks[0].name, "Bass synth");
+    assert_eq!(result.value.tracks[0].kind, TrackKind::Midi);
+    assert_eq!(result.value.tracks[1].name, "2-Audio");
+    assert_eq!(result.value.tracks[1].kind, TrackKind::Audio);
+    assert_eq!(result.value.scenes.len(), 1);
+    assert_eq!(result.value.scenes[0].name, "Verse");
+    assert_eq!(result.value.scenes[0].tempoOverride, Some(128.0));
     assert_eq!(result.value.midiClips.len(), 1);
     let clip = &result.value.midiClips[0];
     assert_eq!(clip.name, "Bass");
@@ -62,11 +70,18 @@ fn mapsSessionClipAndReportsLossyFeatures() {
             .iter()
             .any(|diagnostic| diagnostic.code == DiagnosticCode::UnsupportedVelocityDeviation)
     );
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| { diagnostic.code == DiagnosticCode::UnsupportedSceneTimeSignature })
+    );
 }
 
 #[test]
 fn rejectsInvalidClipRangeWithAnExplicitError() {
     let mut source = projectWithClip();
+    source.scenes[0].timeSignatureEnabled = false;
     source.sessionMidiClips[0].currentStart = 4.0;
     source.sessionMidiClips[0].currentEnd = 0.0;
 
@@ -76,6 +91,23 @@ fn rejectsInvalidClipRangeWithAnExplicitError() {
     assert_eq!(result.diagnostics.len(), 1);
     assert_eq!(result.diagnostics[0].code, DiagnosticCode::InvalidClipRange);
     assert_eq!(result.diagnostics[0].severity, DiagnosticSeverity::Error);
+}
+
+#[test]
+fn rejectsInvalidEnabledSceneTempoWithAnExplicitError() {
+    let mut source = projectWithClip();
+    source.scenes[0].tempo = Some(0.0);
+    source.scenes[0].timeSignatureEnabled = false;
+    source.sessionMidiClips[0].notes[0].velocityDeviation = None;
+
+    let result = LiveToInternalMapper::new(&source).map();
+
+    assert_eq!(result.value.scenes[0].tempoOverride, None);
+    assert_eq!(result.diagnostics.len(), 1);
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        diagnostic.code == DiagnosticCode::InvalidSceneTempo
+            && diagnostic.severity == DiagnosticSeverity::Error
+    }));
 }
 
 fn projectWithClip() -> LiveProject {
@@ -97,6 +129,32 @@ fn projectWithClip() -> LiveProject {
                 ..ClipCounts::default()
             },
         },
+        tracks: vec![
+            LiveTrack {
+                id: "42".to_owned(),
+                kind: LiveTrackKind::Midi,
+                effectiveName: "1-MIDI".to_owned(),
+                userName: "Bass synth".to_owned(),
+                color: Some(10),
+            },
+            LiveTrack {
+                id: "43".to_owned(),
+                kind: LiveTrackKind::Audio,
+                effectiveName: "2-Audio".to_owned(),
+                userName: String::new(),
+                color: Some(11),
+            },
+        ],
+        scenes: vec![LiveScene {
+            id: "3".to_owned(),
+            index: 3,
+            name: "Verse".to_owned(),
+            color: Some(5),
+            tempo: Some(128.0),
+            tempoEnabled: true,
+            timeSignatureId: Some(201),
+            timeSignatureEnabled: true,
+        }],
         sessionMidiClips: vec![LiveMidiClip {
             id: "7".to_owned(),
             trackId: "42".to_owned(),
