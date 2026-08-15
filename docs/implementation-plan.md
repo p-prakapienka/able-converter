@@ -62,9 +62,18 @@ not depend on browser, Tauri, or native filesystem APIs. Platform adapters provi
 files and implement sample resolution.
 
 Implementation and test filenames use UpperCamelCase for Java-style discoverability.
-Folders and Rust module identifiers remain lowercase snake_case. `mod.rs` files use
-explicit `#[path]` declarations to connect the two conventions without disabling
-Rust naming lints.
+Folders and module identifiers use Java package-style lowercase names. Functions,
+methods, fields, variables, arguments, and test functions use lowerCamelCase. `mod.rs`
+files use explicit `#[path]` declarations to connect filenames and module identifiers.
+Crate roots allow only Rust's `non_snake_case` lint; all other warnings remain enabled.
+
+Parsers, mappers, exporters, and other architectural components are objects with
+constructors and use-case methods. They own meaningful input, configuration,
+dependencies, or operation state rather than acting as static namespaces. Models
+remain data-oriented. Behavior belonging to an architectural object stays in private
+methods on that object; module-level functions are reserved for operations genuinely
+independent of every object in the module. Traits are introduced only for real
+substitution or dependency boundaries.
 
 Add files only when they contain real implementation. For example, `Caustic.rs` and
 its parser belong under these same boundaries when Caustic work begins, not as empty
@@ -92,9 +101,9 @@ The concrete conversion pipeline is:
 .als bytes
   -> parser/live
   -> model/live
-  -> mapper/live_to_internal
+  -> mapper/livetointernal
   -> model/internal
-  -> mapper/internal_to_note
+  -> mapper/internaltonote
   -> model/note
   -> exporter/note
   -> .ablbundle bytes
@@ -261,9 +270,11 @@ Acceptance: inspect a real Live 11/12 Set without materializing its XML to disk.
 
 ### 2. Session clip extraction
 
-- Parse Session tracks, scenes, MIDI clips, notes, velocity, and loops.
-- Populate the canonical model.
-- Report unsupported note expression and automation.
+- Parse Session track and scene placement, MIDI clips, notes, velocity, probability,
+  enabled state, and loops. Initial implementation complete with synthetic tests.
+- Populate the canonical model. Initial Live-to-internal mapper complete.
+- Report unsupported note expression, velocity deviation, and automation. Initial
+  diagnostics complete.
 
 Acceptance: golden tests reproduce the musical content of paired Session fixtures.
 
@@ -305,5 +316,5 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ## Current next step
 
-Complete Session MIDI clip and note extraction into the canonical model using minimal
-synthetic fixtures from Live 11 and Live 12.
+Validate Session extraction against minimal sets saved by Live 11 and Live 12, then
+add track names and explicit scene metadata before beginning the Note writer.

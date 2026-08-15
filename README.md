@@ -14,6 +14,10 @@ without extracting it to disk.
 - Count MIDI, audio, group, return, and main tracks.
 - Distinguish Session, Arrangement, and unclassified MIDI/audio clips.
 - Read the global tempo when represented by Live's `Tempo/Manual` structure.
+- Parse Session clip placement, bounds, loop settings, notes, velocity, probability,
+  release velocity, and enabled state into a Live-specific source model.
+- Map Session clips into the canonical model with explicit diagnostics for invalid
+  data and unsupported expression or automation.
 
 ## Structure
 
@@ -29,6 +33,10 @@ src/
     LiveParser.rs      Ableton Live GZIP/XML inspection
     LiveParserTest.rs
     mod.rs
+  mapper/
+    LiveToInternalMapper.rs
+    LiveToInternalMapperTest.rs
+    mod.rs
   tools/
     Inspect.rs         Developer inspection utility
 docs/
@@ -37,8 +45,7 @@ docs/
 
 As conversion is implemented, `mapper/`, `exporter/`, and destination model files
 will be added without splitting the project into crates prematurely. CamelCase
-filenames provide Java-style scanability; their Rust module names stay idiomatic
-snake_case.
+filenames and lowercase Rust module names provide Java-style scanability.
 
 The planned browser build will compile the Rust conversion library to WebAssembly.
 The planned desktop build will call the same library natively from Tauri. Their
@@ -53,6 +60,12 @@ cargo run --example inspect -- path/to/project.als --json
 ```
 
 The inspector is a development utility rather than a supported product CLI.
+
+The library API exposes `parser::live::LiveParser` for inspection and Session clip
+extraction, followed by `mapper::livetointernal::LiveToInternalMapper` for canonical
+conversion. Both are cohesive objects that own their operation input or state. File
+access remains the responsibility of the caller so they can be reused from
+WebAssembly and desktop adapters.
 
 ## Development
 

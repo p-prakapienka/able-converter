@@ -2,7 +2,7 @@ use std::io::Write;
 
 use flate2::{Compression, write::GzEncoder};
 
-use super::live::inspect_als;
+use super::live::LiveParser;
 
 fn gzip(xml: &str) -> Vec<u8> {
     let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
@@ -11,7 +11,7 @@ fn gzip(xml: &str) -> Vec<u8> {
 }
 
 #[test]
-fn inspect_als_reads_tracks_clips_version_and_tempo() {
+fn parserInspectsTracksClipsVersionAndTempo() {
     let xml = r#"
         <Ableton MajorVersion="5" MinorVersion="12.0_123"
                  Creator="Ableton Live 12.1" Revision="abc123">
@@ -36,7 +36,9 @@ fn inspect_als_reads_tracks_clips_version_and_tempo() {
         </Ableton>
     "#;
 
-    let result = inspect_als(gzip(xml).as_slice()).expect("inspect fixture");
+    let result = LiveParser::new(gzip(xml).as_slice())
+        .inspect()
+        .expect("inspect fixture");
 
     assert_eq!(result.format.major.as_deref(), Some("5"));
     assert_eq!(result.format.minor.as_deref(), Some("12.0_123"));
@@ -45,15 +47,118 @@ fn inspect_als_reads_tracks_clips_version_and_tempo() {
     assert_eq!(result.tracks.midi, 1);
     assert_eq!(result.tracks.audio, 1);
     assert_eq!(result.tracks.group, 1);
-    assert_eq!(result.tracks.return_tracks, 1);
+    assert_eq!(result.tracks.returnTracks, 1);
     assert_eq!(result.tracks.main, 1);
-    assert_eq!(result.clips.session_midi, 1);
-    assert_eq!(result.clips.arrangement_midi, 1);
-    assert_eq!(result.clips.arrangement_audio, 1);
+    assert_eq!(result.clips.sessionMidi, 1);
+    assert_eq!(result.clips.arrangementMidi, 1);
+    assert_eq!(result.clips.arrangementAudio, 1);
 }
 
 #[test]
-fn rejects_non_ableton_xml() {
-    let error = inspect_als(gzip("<not-ableton />").as_slice()).expect_err("reject fixture");
+fn rejectsNonAbletonXml() {
+    let error = LiveParser::new(gzip("<not-ableton />").as_slice())
+        .inspect()
+        .expect_err("reject fixture");
     assert!(error.to_string().contains("Ableton root"));
+}
+
+#[test]
+fn parserReadsSessionClipNotesAndLoop() {
+    let xml = r#"
+        <Ableton MajorVersion="5" MinorVersion="11.0_11300" Creator="Ableton Live 11">
+          <LiveSet>
+            <Tracks>
+              <MidiTrack Id="42">
+                <DeviceChain><MainSequencer>
+                  <ClipSlotList>
+                    <ClipSlot Id="3">
+                      <ClipSlot><Value>
+                        <MidiClip Id="7" Time="0">
+                          <CurrentStart Value="0" />
+                          <CurrentEnd Value="4" />
+                          <Loop>
+                            <LoopStart Value="0" />
+                            <LoopEnd Value="4" />
+                            <StartRelative Value="0" />
+                            <LoopOn Value="true" />
+                          </Loop>
+                          <Name Value="Bass &amp; Lead" />
+                          <Disabled Value="false" />
+                          <Envelopes><Envelopes><AutomationEnvelope /></Envelopes></Envelopes>
+                          <Notes>
+                            <KeyTracks>
+                              <KeyTrack Id="0">
+                                <Notes>
+                                  <MidiNoteEvent Time="1.5" Duration="0.5" Velocity="75.5"
+                                      VelocityDeviation="2" OffVelocity="64" Probability="0.75"
+                                      IsEnabled="false" NoteId="23" />
+                                </Notes>
+                                <MidiKey Value="43" />
+                              </KeyTrack>
+                              <KeyTrack Id="1">
+                                <Notes>
+                                  <MidiNoteEvent Time="0" Duration="0.25" Velocity="100" NoteId="24" />
+                                </Notes>
+                                <MidiKey Value="60" />
+                              </KeyTrack>
+                            </KeyTracks>
+                            <PerNoteEventStore><EventLists><PerNoteEvent /></EventLists></PerNoteEventStore>
+                          </Notes>
+                        </MidiClip>
+                      </Value></ClipSlot>
+                    </ClipSlot>
+                  </ClipSlotList>
+                  <ClipTimeable><ArrangerAutomation><Events>
+                    <MidiClip Id="8" Time="4" />
+                  </Events></ArrangerAutomation></ClipTimeable>
+                </MainSequencer></DeviceChain>
+              </MidiTrack>
+            </Tracks>
+          </LiveSet>
+        </Ableton>
+    "#;
+
+    let project = LiveParser::new(gzip(xml).as_slice())
+        .parse()
+        .expect("parse fixture");
+
+    assert_eq!(project.inspection.clips.sessionMidi, 1);
+    assert_eq!(project.inspection.clips.arrangementMidi, 1);
+    assert_eq!(project.sessionMidiClips.len(), 1);
+    let clip = &project.sessionMidiClips[0];
+    assert_eq!(clip.id, "7");
+    assert_eq!(clip.trackId, "42");
+    assert_eq!(clip.sceneIndex, 3);
+    assert_eq!(clip.name, "Bass & Lead");
+    assert_eq!(clip.currentStart, 0.0);
+    assert_eq!(clip.currentEnd, 4.0);
+    assert!(clip.loopSettings.expect("loop").enabled);
+    assert!(clip.hasClipAutomation);
+    assert!(clip.hasPerNoteExpression);
+    assert_eq!(clip.notes.len(), 2);
+    assert_eq!(clip.notes[0].pitch, 43);
+    assert_eq!(clip.notes[0].velocity, 75.5);
+    assert_eq!(clip.notes[0].probability, Some(0.75));
+    assert_eq!(clip.notes[0].enabled, Some(false));
+    assert_eq!(clip.notes[1].pitch, 60);
+    assert_eq!(clip.notes[1].enabled, None);
+}
+
+#[test]
+fn parserRejectsIncompleteSessionClip() {
+    let xml = r#"
+        <Ableton Creator="Ableton Live 12">
+          <LiveSet><Tracks><MidiTrack Id="42"><DeviceChain><MainSequencer>
+            <ClipSlotList><ClipSlot Id="0"><ClipSlot><Value>
+              <MidiClip Id="7"><CurrentStart Value="0" /></MidiClip>
+            </Value></ClipSlot></ClipSlot></ClipSlotList>
+          </MainSequencer></DeviceChain></MidiTrack></Tracks></LiveSet>
+        </Ableton>
+    "#;
+
+    let error = LiveParser::new(gzip(xml).as_slice())
+        .parse()
+        .expect_err("reject incomplete clip");
+
+    assert!(error.to_string().contains("CurrentEnd"));
 }
