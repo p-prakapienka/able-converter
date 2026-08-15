@@ -19,21 +19,28 @@ pub struct BeatRange {
 
 impl BeatRange {
     #[must_use]
-    pub fn is_valid(self) -> bool {
+    pub fn isValid(self) -> bool {
         self.start.0.is_finite() && self.end.0.is_finite() && self.end.0 >= self.start.0
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct ClipLoop {
+    pub region: BeatRange,
+    pub startRelative: Beat,
+    pub enabled: bool,
 }
 
 /// Identifies whether a canonical clip came from a Session slot or Arrangement range.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ClipSource {
     Session {
-        track_id: String,
-        scene_index: usize,
+        trackId: String,
+        sceneIndex: usize,
     },
     Arrangement {
-        track_id: String,
-        timeline_range: BeatRange,
+        trackId: String,
+        timelineRange: BeatRange,
     },
 }
 
@@ -42,7 +49,8 @@ pub struct Note {
     pub pitch: u8,
     pub start: Beat,
     pub duration: Beat,
-    pub velocity: u8,
+    pub velocity: f32,
+    pub releaseVelocity: Option<f32>,
     pub muted: bool,
     pub probability: Option<f32>,
 }
@@ -52,7 +60,44 @@ pub struct MidiClip {
     pub id: String,
     pub name: String,
     pub source: ClipSource,
-    pub length: Beat,
-    pub loop_region: Option<BeatRange>,
+    pub contentRange: BeatRange,
+    pub loopSettings: Option<ClipLoop>,
+    pub disabled: bool,
     pub notes: Vec<Note>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Project {
+    pub tempo: Option<f64>,
+    pub midiClips: Vec<MidiClip>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DiagnosticSeverity {
+    Warning,
+    Error,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DiagnosticCode {
+    InvalidClipRange,
+    InvalidLoopRange,
+    InvalidNote,
+    UnsupportedClipAutomation,
+    UnsupportedPerNoteExpression,
+    UnsupportedVelocityDeviation,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Diagnostic {
+    pub severity: DiagnosticSeverity,
+    pub code: DiagnosticCode,
+    pub sourceId: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MappingResult<T> {
+    pub value: T,
+    pub diagnostics: Vec<Diagnostic>,
 }

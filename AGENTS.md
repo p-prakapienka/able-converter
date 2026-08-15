@@ -38,16 +38,37 @@ canonical internal model.
 ## Source organization
 
 - Keep all Rust implementation and test code under `src/`.
-- Use lowercase folder and module names.
+- Use lowercase folder names.
 - Use UpperCamelCase implementation filenames such as `Live.rs`,
   `LiveParser.rs`, and `NoteExporter.rs`.
-- Connect CamelCase paths to snake_case Rust module names with explicit `#[path]`
-  declarations in the nearest `mod.rs`; do not suppress naming lints globally.
+- Use Java package-style lowercase module identifiers, concatenating words without
+  underscores. Use lowerCamelCase for functions, methods, fields, variables,
+  arguments, and test functions. Keep types and traits UpperCamelCase.
+- Connect CamelCase paths to lowercase Rust module names with explicit `#[path]`
+  declarations in the nearest `mod.rs`.
+- Add `#![allow(non_snake_case)]` at each crate root because this project deliberately
+  uses Java naming. Do not suppress any broader warning category.
 - Put tests in separate sibling files such as `LiveParserTest.rs` and register
   them with `#[cfg(test)]` from the nearest `mod.rs`.
 - Keep application code under `src/`; use `src/web/` for the browser adapter and
   `src/desktop/` for the Tauri adapter.
 - Create future format, mapper, and exporter files only when implementation begins.
+
+## Object design
+
+- Implement parsers, mappers, exporters, and other architectural components as
+  cohesive structs with constructors and use-case methods.
+- Let these objects own meaningful input, configuration, dependencies, or operation
+  state; do not create empty structs as static utility namespaces.
+- Keep models data-oriented unless they enforce domain invariants or behavior.
+- Put behavior belonging to an architectural component in private methods on that
+  component, even if a method does not yet access fields. Module-level privacy is not
+  object encapsulation. Keep a private module function only when it is genuinely
+  independent of every object in that module.
+- Use traits only for genuine substitution or dependency boundaries, and prefer
+  composition over inheritance-shaped designs.
+- Keep public application workflows object-oriented instead of accumulating public
+  module functions.
 
 ## Conversion rules
 

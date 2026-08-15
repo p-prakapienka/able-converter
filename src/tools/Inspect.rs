@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use std::env;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -5,7 +7,7 @@ use std::fs::File;
 use std::path::PathBuf;
 
 use able_converter::model::live::LiveSetInspection;
-use able_converter::parser::live::inspect_als;
+use able_converter::parser::live::LiveParser;
 
 fn main() {
     if let Err(error) = run() {
@@ -27,18 +29,18 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     let path = path.ok_or("usage: cargo run --example inspect -- <project.als> [--json]")?;
-    let report = inspect_als(File::open(path)?)?;
+    let report = LiveParser::new(File::open(path)?).inspect()?;
 
     if json {
         println!("{}", serde_json::to_string_pretty(&report)?);
     } else {
-        print_human_report(&report);
+        printHumanReport(&report);
     }
 
     Ok(())
 }
 
-fn print_human_report(report: &LiveSetInspection) {
+fn printHumanReport(report: &LiveSetInspection) {
     let version = report.format.minor.as_deref().unwrap_or("unknown");
     let creator = report.format.creator.as_deref().unwrap_or("unknown");
     let tempo = report
@@ -53,14 +55,14 @@ fn print_human_report(report: &LiveSetInspection) {
     println!("    MIDI: {}", report.tracks.midi);
     println!("    Audio: {}", report.tracks.audio);
     println!("    Group: {}", report.tracks.group);
-    println!("    Return: {}", report.tracks.return_tracks);
+    println!("    Return: {}", report.tracks.returnTracks);
     println!("    Main/Master: {}", report.tracks.main);
     println!("  MIDI clips:");
-    println!("    Session: {}", report.clips.session_midi);
-    println!("    Arrangement: {}", report.clips.arrangement_midi);
-    println!("    Unclassified: {}", report.clips.unclassified_midi);
+    println!("    Session: {}", report.clips.sessionMidi);
+    println!("    Arrangement: {}", report.clips.arrangementMidi);
+    println!("    Unclassified: {}", report.clips.unclassifiedMidi);
     println!("  Audio clips:");
-    println!("    Session: {}", report.clips.session_audio);
-    println!("    Arrangement: {}", report.clips.arrangement_audio);
-    println!("    Unclassified: {}", report.clips.unclassified_audio);
+    println!("    Session: {}", report.clips.sessionAudio);
+    println!("    Arrangement: {}", report.clips.arrangementAudio);
+    println!("    Unclassified: {}", report.clips.unclassifiedAudio);
 }

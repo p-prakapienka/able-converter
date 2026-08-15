@@ -8,4 +8,4 @@ pub mod live;
 
 #[cfg(test)]
 #[path = "InternalTest.rs"]
-mod internal_test;
+mod internaltest;
