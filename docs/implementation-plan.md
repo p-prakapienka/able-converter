@@ -35,7 +35,7 @@ src/
   model/
     Live.rs
     Internal.rs
-    Note.rs                 added with the Note writer
+    Note.rs                 verified Note Set JSON subset
     *Test.rs
     mod.rs
   parser/
@@ -50,14 +50,17 @@ src/
   mapper/
     LiveToInternalMapper.rs
     InternalToNoteMapper.rs
+    livetointernal/MappingContext.rs
+    internaltonote/MappingContext.rs
     *Test.rs
     mod.rs
   exporter/
-    NoteExporter.rs
+    NoteExporter.rs         Set JSON and modern bundle serialization
     *Test.rs
     mod.rs
   tools/
     Inspect.rs
+    Convert.rs               temporary end-to-end developer adapter
   web/                     future browser frontend and WebAssembly adapter
   desktop/                 future Tauri desktop adapter
 ```
@@ -73,12 +76,14 @@ files use explicit `#[path]` declarations to connect filenames and module identi
 Crate roots allow only Rust's `non_snake_case` lint; all other warnings remain enabled.
 
 Parsers, mappers, exporters, and other architectural components are objects with
-constructors and use-case methods. They own meaningful input, configuration,
-dependencies, or operation state rather than acting as static namespaces. Models
-remain data-oriented. Behavior belonging to an architectural object stays in private
-methods on that object; module-level functions are reserved for operations genuinely
-independent of every object in the module. Traits are introduced only for real
-substitution or dependency boundaries.
+constructors and use-case methods. Mappers and exporters are reusable stateless
+services until they gain real dependencies or configuration; conversion inputs are
+method arguments and mutable per-call state lives in private mapping contexts.
+Parsers may own consumable input streams. Models remain data-oriented. Behavior
+belonging to an architectural object stays in private methods on that object;
+module-level functions are reserved for operations genuinely independent of every
+object in the module. Traits are introduced only for real substitution or dependency
+boundaries.
 
 Public parser facade files contain only their parser struct/impl pair. Private state
 objects and builders live in a lowercase source-specific package folder, one
@@ -293,9 +298,12 @@ Acceptance: golden tests reproduce the musical content of paired Session fixture
 
 ### 3. Minimal Note writer
 
-- Infer the minimal `.abl` schema.
-- Write one track, scene, clip, note, and known Drift preset.
-- Package a modern `.ablbundle`.
+- Infer the minimal `.abl` schema. Initial structural subset documented from
+  independently generated sets and open-source format evidence.
+- Write selected Session tracks, scenes, clips, notes, and a known Analog Drift Core
+  Library preset reference. Initial internal-to-Note mapper complete with synthetic
+  tests and explicit diagnostics for unsupported or over-limit content.
+- Package `Song.abl` in a modern `.ablbundle`. Initial stored-ZIP exporter complete.
 
 Acceptance: the generated bundle opens and plays in Note.
 
@@ -329,6 +337,7 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ## Current next step
 
-Validate Session extraction, track names, and scene metadata against minimal sets
-saved by Live 11 and Live 12. Then begin paired-fixture discovery of the minimal Note
-JSON and bundle structure.
+Run the physical acceptance check for the generated one-track Note bundle, then save
+minimal paired Live 11/12 and Note fixtures. Use their diffs to confirm preset
+hydration, colors, time signatures, and version-specific fields before expanding the
+writer or beginning the browser preview.

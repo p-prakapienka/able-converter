@@ -61,8 +61,9 @@ canonical internal model.
 
 - Implement parsers, mappers, exporters, and other architectural components as
   cohesive structs with constructors and use-case methods.
-- Let these objects own meaningful input, configuration, dependencies, or operation
-  state; do not create empty structs as static utility namespaces.
+- Keep mappers and exporters reusable and stateless when they have no dependencies
+  or configuration. Pass conversion input to their use-case methods and keep mutable
+  per-call state in private context objects. Parsers may own consumable input streams.
 - Keep models data-oriented unless they enforce domain invariants or behavior.
 - Put behavior belonging to an architectural component in private methods on that
   component, even if a method does not yet access fields. Module-level privacy is not

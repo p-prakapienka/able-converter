@@ -22,6 +22,10 @@ without extracting it to disk.
   data and unsupported expression or automation.
 - Resolve canonical track names and scene tempo overrides while reporting enabled,
   not-yet-decoded scene time signatures.
+- Map a selected canonical Session grid into a typed Ableton Note Set subset with
+  explicit track, scene, clip-length, and lossy-feature diagnostics.
+- Serialize `Song.abl` and package it as a stored modern `.ablbundle` with a known
+  Analog Drift Core Library preset reference.
 
 ## Structure
 
@@ -31,6 +35,7 @@ src/
   model/
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
+    Note.rs            Verified Ableton Note Set JSON subset
     InternalTest.rs
     mod.rs
   parser/
@@ -40,7 +45,14 @@ src/
     mod.rs
   mapper/
     LiveToInternalMapper.rs
+    InternalToNoteMapper.rs
+    livetointernal/        Private per-call mapping context
+    internaltonote/        Private per-call mapping context
     LiveToInternalMapperTest.rs
+    mod.rs
+  exporter/
+    NoteExporter.rs    Song.abl and .ablbundle serialization
+    NoteExporterTest.rs
     mod.rs
   tools/
     Inspect.rs         Developer inspection utility
@@ -66,11 +78,25 @@ cargo run --example inspect -- path/to/project.als --json
 
 The inspector is a development utility rather than a supported product CLI.
 
+To exercise the complete conversion path while the browser interface is incomplete:
+
+```bash
+cargo run --example convert -- path/to/project.als path/to/output.ablbundle
+```
+
+The converter prints all diagnostics and refuses to write an output bundle when any
+error diagnostic is present.
+
 The library API exposes `parser::live::LiveParser` for inspection and Session clip
 extraction, followed by `mapper::livetointernal::LiveToInternalMapper` for canonical
-conversion. Both are cohesive objects that own their operation input or state. File
-access remains the responsibility of the caller so they can be reused from
-WebAssembly and desktop adapters.
+conversion. `mapper::internaltonote::InternalToNoteMapper` creates destination Set
+data, and `exporter::note::NoteExporter` writes Set JSON or a modern bundle. The
+mappers and exporter are reusable stateless services; inputs are method arguments and
+diagnostics live in private per-call contexts. File access remains the responsibility
+of the caller so the pipeline can be reused from WebAssembly and desktop adapters.
+
+The Note schema is undocumented. See `docs/note-format.md` for the implemented
+evidence, provisional behavior, and physical acceptance check.
 
 ## Development
 
