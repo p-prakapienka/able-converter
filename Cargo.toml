@@ -8,14 +8,17 @@ repository = "https://github.com/p-prakapienka/able-converter"
 name = "inspect"
 path = "src/tools/Inspect.rs"
 
+[[example]]
+name = "convert"
+path = "src/tools/Convert.rs"
+
 [dependencies]
 flate2 = "1"
 quick-xml = "0.38"
 serde = { version = "1", features = ["derive"] }
-thiserror = "2"
-
-[dev-dependencies]
 serde_json = "1"
+thiserror = "2"
+zip = { version = "2", default-features = false }
 
 [lints.rust]
 unsafe_code = "forbid"

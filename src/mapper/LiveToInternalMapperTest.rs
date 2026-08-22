@@ -23,7 +23,7 @@ fn mapsSessionClipAndReportsLossyFeatures() {
         enabled: None,
     });
 
-    let result = LiveToInternalMapper::new(&source).map();
+    let result = LiveToInternalMapper::new().map(&source);
 
     assert_eq!(result.value.tracks.len(), 2);
     assert_eq!(result.value.tracks[0].name, "Bass synth");
@@ -85,7 +85,7 @@ fn rejectsInvalidClipRangeWithAnExplicitError() {
     source.sessionMidiClips[0].currentStart = 4.0;
     source.sessionMidiClips[0].currentEnd = 0.0;
 
-    let result = LiveToInternalMapper::new(&source).map();
+    let result = LiveToInternalMapper::new().map(&source);
 
     assert!(result.value.midiClips.is_empty());
     assert_eq!(result.diagnostics.len(), 1);
@@ -100,7 +100,7 @@ fn rejectsInvalidEnabledSceneTempoWithAnExplicitError() {
     source.scenes[0].timeSignatureEnabled = false;
     source.sessionMidiClips[0].notes[0].velocityDeviation = None;
 
-    let result = LiveToInternalMapper::new(&source).map();
+    let result = LiveToInternalMapper::new().map(&source);
 
     assert_eq!(result.value.scenes[0].tempoOverride, None);
     assert_eq!(result.diagnostics.len(), 1);
@@ -108,6 +108,21 @@ fn rejectsInvalidEnabledSceneTempoWithAnExplicitError() {
         diagnostic.code == DiagnosticCode::InvalidSceneTempo
             && diagnostic.severity == DiagnosticSeverity::Error
     }));
+}
+
+#[test]
+fn reusesMapperWithoutRetainingDiagnostics() {
+    let mapper = LiveToInternalMapper::new();
+    let mut invalidSource = projectWithClip();
+    invalidSource.sessionMidiClips[0].currentStart = 4.0;
+    invalidSource.sessionMidiClips[0].currentEnd = 0.0;
+    assert!(mapper.map(&invalidSource).hasErrors());
+
+    let mut validSource = projectWithClip();
+    validSource.scenes[0].timeSignatureEnabled = false;
+    validSource.sessionMidiClips[0].notes[0].velocityDeviation = None;
+
+    assert!(mapper.map(&validSource).diagnostics.is_empty());
 }
 
 fn projectWithClip() -> LiveProject {

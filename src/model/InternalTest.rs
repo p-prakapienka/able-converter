@@ -1,4 +1,6 @@
-use super::internal::{Beat, BeatRange};
+use super::internal::{
+    Beat, BeatRange, Diagnostic, DiagnosticCode, DiagnosticSeverity, MappingResult,
+};
 
 #[test]
 fn beatRangeRejectsBackwardsOrNonFiniteRanges() {
@@ -23,4 +25,19 @@ fn beatRangeRejectsBackwardsOrNonFiniteRanges() {
         }
         .isValid()
     );
+}
+
+#[test]
+fn mappingResultReportsWhetherItContainsErrors() {
+    let result = MappingResult {
+        value: (),
+        diagnostics: vec![Diagnostic {
+            severity: DiagnosticSeverity::Error,
+            code: DiagnosticCode::InvalidNote,
+            sourceId: "note-1".to_owned(),
+            message: "invalid note".to_owned(),
+        }],
+    };
+
+    assert!(result.hasErrors());
 }

@@ -1,30 +1,28 @@
 //! Semantic mapping from Ableton Live source models to the canonical model.
 
 use crate::model::internal::{
-    Beat, BeatRange, ClipLoop, ClipSource, Diagnostic, DiagnosticCode, DiagnosticSeverity,
-    MappingResult, MidiClip, Note, Project, Scene, Track, TrackKind,
+    Beat, BeatRange, ClipLoop, ClipSource, DiagnosticCode, MappingResult, MidiClip, Note, Project,
+    Scene, Track, TrackKind,
 };
 use crate::model::live::{
     LiveMidiClip, LiveMidiNote, LiveProject, LiveScene, LiveTrack, LiveTrackKind,
 };
 
-/// Maps one Ableton Live source project into the canonical project model.
-pub struct LiveToInternalMapper<'a> {
-    source: &'a LiveProject,
-    diagnostics: Vec<Diagnostic>,
-}
+use super::livetointernalmappingcontext::LiveToInternalMappingContext;
 
-impl<'a> LiveToInternalMapper<'a> {
-    pub fn new(source: &'a LiveProject) -> Self {
-        Self {
-            source,
-            diagnostics: Vec::new(),
-        }
+/// Reusable stateless service that maps Ableton Live projects into the canonical model.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct LiveToInternalMapper;
+
+impl LiveToInternalMapper {
+    #[must_use]
+    pub fn new() -> Self {
+        Self
     }
 
     #[must_use]
-    pub fn map(mut self) -> MappingResult<Project> {
-        let source = self.source;
+    pub fn map(&self, source: &LiveProject) -> MappingResult<Project> {
+        let mut context = LiveToInternalMappingContext::new();
         let tracks = source
             .tracks
             .iter()
@@ -33,26 +31,23 @@ impl<'a> LiveToInternalMapper<'a> {
         let scenes = source
             .scenes
             .iter()
-            .map(|scene| self.mapScene(scene))
+            .map(|scene| self.mapScene(&mut context, scene))
             .collect();
         let mut midiClips = Vec::new();
 
         for clip in &source.sessionMidiClips {
-            self.reportUnsupportedFeatures(clip);
-            if let Some(mappedClip) = self.mapClip(clip) {
+            self.reportUnsupportedFeatures(&mut context, clip);
+            if let Some(mappedClip) = self.mapClip(&mut context, clip) {
                 midiClips.push(mappedClip);
             }
         }
 
-        MappingResult {
-            value: Project {
-                tempo: source.inspection.tempo,
-                tracks,
-                scenes,
-                midiClips,
-            },
-            diagnostics: self.diagnostics,
-        }
+        context.finish(Project {
+            tempo: source.inspection.tempo,
+            tracks,
+            scenes,
+            midiClips,
+        })
     }
 
     fn mapTrack(&self, track: &LiveTrack) -> Track {
@@ -76,12 +71,12 @@ impl<'a> LiveToInternalMapper<'a> {
         }
     }
 
-    fn mapScene(&mut self, scene: &LiveScene) -> Scene {
+    fn mapScene(&self, context: &mut LiveToInternalMappingContext, scene: &LiveScene) -> Scene {
         let tempoOverride = if scene.tempoEnabled {
             match scene.tempo {
                 Some(tempo) if tempo.is_finite() && tempo > 0.0 => Some(tempo),
                 _ => {
-                    self.error(
+                    context.error(
                         scene.id.clone(),
                         DiagnosticCode::InvalidSceneTempo,
                         "enabled scene tempo must be a finite positive number",
@@ -97,7 +92,7 @@ impl<'a> LiveToInternalMapper<'a> {
             let sourceValue = scene
                 .timeSignatureId
                 .map_or_else(|| "missing".to_owned(), |value| value.to_string());
-            self.warning(
+            context.warning(
                 scene.id.clone(),
                 DiagnosticCode::UnsupportedSceneTimeSignature,
                 format!(
@@ -115,8 +110,13 @@ impl<'a> LiveToInternalMapper<'a> {
         }
     }
 
-    fn mapClip(&mut self, clip: &LiveMidiClip) -> Option<MidiClip> {
+    fn mapClip(
+        &self,
+        context: &mut LiveToInternalMappingContext,
+        clip: &LiveMidiClip,
+    ) -> Option<MidiClip> {
         let contentRange = self.mapRange(
+            context,
             clip.currentStart,
             clip.currentEnd,
             clip,
@@ -127,6 +127,7 @@ impl<'a> LiveToInternalMapper<'a> {
         let loopSettings = match clip.loopSettings {
             Some(sourceLoop) => {
                 let region = self.mapRange(
+                    context,
                     sourceLoop.start,
                     sourceLoop.end,
                     clip,
@@ -134,7 +135,7 @@ impl<'a> LiveToInternalMapper<'a> {
                     "clip loop range",
                 )?;
                 if !sourceLoop.startRelative.is_finite() {
-                    self.error(
+                    context.error(
                         clip.id.clone(),
                         DiagnosticCode::InvalidLoopRange,
                         "clip loop start-relative value is not finite",
@@ -154,7 +155,7 @@ impl<'a> LiveToInternalMapper<'a> {
             .notes
             .iter()
             .enumerate()
-            .filter_map(|(index, note)| self.mapNote(clip, note, index))
+            .filter_map(|(index, note)| self.mapNote(context, clip, note, index))
             .collect::<Vec<_>>();
         notes.sort_by(|left, right| {
             left.start
@@ -178,7 +179,8 @@ impl<'a> LiveToInternalMapper<'a> {
     }
 
     fn mapRange(
-        &mut self,
+        &self,
+        context: &mut LiveToInternalMappingContext,
         start: f64,
         end: f64,
         clip: &LiveMidiClip,
@@ -192,7 +194,7 @@ impl<'a> LiveToInternalMapper<'a> {
         if range.isValid() {
             Some(range)
         } else {
-            self.error(
+            context.error(
                 clip.id.clone(),
                 code,
                 format!("{description} is invalid: {start}..{end}"),
@@ -201,7 +203,13 @@ impl<'a> LiveToInternalMapper<'a> {
         }
     }
 
-    fn mapNote(&mut self, clip: &LiveMidiClip, note: &LiveMidiNote, index: usize) -> Option<Note> {
+    fn mapNote(
+        &self,
+        context: &mut LiveToInternalMappingContext,
+        clip: &LiveMidiClip,
+        note: &LiveMidiNote,
+        index: usize,
+    ) -> Option<Note> {
         let sourceId = note.id.as_ref().map_or_else(
             || format!("{}:note:{index}", clip.id),
             |id| format!("{}:{id}", clip.id),
@@ -219,7 +227,7 @@ impl<'a> LiveToInternalMapper<'a> {
 
         if !(validPitch && validTiming && validVelocity && validReleaseVelocity && validProbability)
         {
-            self.error(
+            context.error(
                 sourceId,
                 DiagnosticCode::InvalidNote,
                 format!(
@@ -234,7 +242,7 @@ impl<'a> LiveToInternalMapper<'a> {
             .velocityDeviation
             .is_some_and(|deviation| deviation != 0.0)
         {
-            self.warning(
+            context.warning(
                 sourceId,
                 DiagnosticCode::UnsupportedVelocityDeviation,
                 "note velocity deviation is preserved only in the Live source model",
@@ -252,38 +260,24 @@ impl<'a> LiveToInternalMapper<'a> {
         })
     }
 
-    fn reportUnsupportedFeatures(&mut self, clip: &LiveMidiClip) {
+    fn reportUnsupportedFeatures(
+        &self,
+        context: &mut LiveToInternalMappingContext,
+        clip: &LiveMidiClip,
+    ) {
         if clip.hasClipAutomation {
-            self.warning(
+            context.warning(
                 clip.id.clone(),
                 DiagnosticCode::UnsupportedClipAutomation,
                 "clip automation is not mapped yet",
             );
         }
         if clip.hasPerNoteExpression {
-            self.warning(
+            context.warning(
                 clip.id.clone(),
                 DiagnosticCode::UnsupportedPerNoteExpression,
                 "per-note expression is not mapped yet",
             );
         }
-    }
-
-    fn warning(&mut self, sourceId: String, code: DiagnosticCode, message: impl Into<String>) {
-        self.diagnostics.push(Diagnostic {
-            severity: DiagnosticSeverity::Warning,
-            code,
-            sourceId,
-            message: message.into(),
-        });
-    }
-
-    fn error(&mut self, sourceId: String, code: DiagnosticCode, message: impl Into<String>) {
-        self.diagnostics.push(Diagnostic {
-            severity: DiagnosticSeverity::Error,
-            code,
-            sourceId,
-            message: message.into(),
-        });
     }
 }

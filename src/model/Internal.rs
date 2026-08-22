@@ -116,6 +116,18 @@ pub enum DiagnosticCode {
     UnsupportedVelocityDeviation,
     InvalidSceneTempo,
     UnsupportedSceneTimeSignature,
+    MissingProjectTempo,
+    NoteTrackLimitExceeded,
+    NoteSceneLimitExceeded,
+    UnknownTrackSelection,
+    UnknownSceneSelection,
+    UnsupportedTrackKind,
+    DuplicateSessionSlot,
+    NoteClipLengthExceeded,
+    UnsupportedMutedNote,
+    UnsupportedNoteProbability,
+    UnsupportedLoopStartRelative,
+    UnsupportedSceneTempoOverride,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -130,4 +142,13 @@ pub struct Diagnostic {
 pub struct MappingResult<T> {
     pub value: T,
     pub diagnostics: Vec<Diagnostic>,
+}
+
+impl<T> MappingResult<T> {
+    #[must_use]
+    pub fn hasErrors(&self) -> bool {
+        self.diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.severity == DiagnosticSeverity::Error)
+    }
 }
