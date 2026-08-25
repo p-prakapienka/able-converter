@@ -20,6 +20,9 @@ jobs:
       - name: Install Rust toolchain
         run: rustup show
 
+      - name: Install WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+
       - name: Check formatting
         run: cargo fmt --all --check
 
@@ -28,3 +31,9 @@ jobs:
 
       - name: Run tests
         run: cargo test --all-targets
+
+      - name: Check WebAssembly adapter
+        run: cargo check --target wasm32-unknown-unknown
+
+      - name: Check browser JavaScript
+        run: node --input-type=module --check < src/web/frontend/app.js

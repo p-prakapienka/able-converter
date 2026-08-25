@@ -26,6 +26,10 @@ without extracting it to disk.
   explicit track, scene, clip-length, and lossy-feature diagnostics.
 - Serialize `Song.abl` and package it as a stored modern `.ablbundle` with a known
   Analog Drift Core Library preset reference.
+- Load `.als` bytes locally through a WebAssembly adapter and produce aligned source
+  and target preview data with a combined compatibility report.
+- Browse Session clips and render read-only source/target piano rolls in the browser,
+  distinguishing mapped, lossy, and omitted notes.
 
 ## Structure
 
@@ -56,6 +60,17 @@ src/
     mod.rs
   tools/
     Inspect.rs         Developer inspection utility
+  web/
+    adapter/
+      BrowserAdapter.rs       Rust/WASM application boundary
+    factory/
+      ProjectPreviewFactory.rs
+      ProjectPreviewFactoryTest.rs
+    model/             Browser preview models
+    frontend/
+      index.html       Local browser UI
+      app.js           Shared canvas frontend
+      styles.css
 docs/
   implementation-plan.md
 ```
@@ -64,10 +79,10 @@ As conversion is implemented, `mapper/`, `exporter/`, and destination model file
 will be added without splitting the project into crates prematurely. CamelCase
 filenames and lowercase Rust module names provide Java-style scanability.
 
-The planned browser build will compile the Rust conversion library to WebAssembly.
-The planned desktop build will call the same library natively from Tauri. Their
-adapters will live in `src/web/` and `src/desktop/`, keeping application code under
-`src/`.
+The browser build compiles the Rust conversion library to WebAssembly. The planned
+desktop build will call the same library natively from Tauri and reuse the canvas
+frontend. Their adapters live under `src/web/` and future `src/desktop/`, keeping
+application code under `src/`.
 
 ## Inspecting a Set during development
 
@@ -97,6 +112,20 @@ of the caller so the pipeline can be reused from WebAssembly and desktop adapter
 
 The Note schema is undocumented. See `docs/note-format.md` for the implemented
 evidence, provisional behavior, and physical acceptance check.
+
+## Running the browser inspector
+
+Install `wasm-pack`, build the browser package, and serve `src/web/frontend/` from a
+local HTTP server:
+
+```bash
+wasm-pack build --target web --out-dir src/web/frontend/pkg
+npx serve src/web/frontend
+```
+
+Open the printed local URL and drop an `.als` file onto the page. The browser reads
+the selected bytes locally and does not upload the Set. Generated
+`src/web/frontend/pkg/` output is a local build artifact and should not be committed.
 
 ## Development
 

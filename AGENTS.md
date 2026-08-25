@@ -20,7 +20,9 @@ dependency boundary justifies extracting another crate.
   model to destination models.
 - `src/exporter/` serializes destination models into project bytes.
 - `src/tools/` contains developer targets, not product interfaces.
-- Future `src/web/` and `src/desktop/` adapters depend inward on the library.
+- `src/web/` contains separate `adapter/`, `factory/`, `model/`, and `frontend/`
+  packages for the browser boundary. The future `src/desktop/` adapter depends
+  inward on the same library and reuses the browser canvas frontend.
 
 Keep platform-specific file access outside the library. Prefer byte or `Read`-based
 APIs and explicit sample-resolver interfaces.
@@ -53,7 +55,8 @@ canonical internal model.
 - Keep a public parser facade such as `LiveParser.rs` focused on its parser
   struct/impl pair. Put its private collaborator objects in a lowercase package
   folder such as `src/parser/live/`, with one UpperCamelCase file per struct/impl.
-- Keep application code under `src/`; use `src/web/` for the browser adapter and
+- Keep application code under `src/`; separate the browser adapter, preview
+  factories/models, and shared HTML/canvas frontend under `src/web/`. Use
   `src/desktop/` for the Tauri adapter.
 - Create future format, mapper, and exporter files only when implementation begins.
 
