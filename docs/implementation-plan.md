@@ -61,7 +61,17 @@ src/
   tools/
     Inspect.rs
     Convert.rs               temporary end-to-end developer adapter
-  web/                     future browser frontend and WebAssembly adapter
+  web/                     browser frontend and WebAssembly boundary
+    adapter/
+      BrowserAdapter.rs      Rust/WASM boundary
+    factory/
+      ProjectPreviewFactory.rs  composite preview construction
+      ProjectPreviewFactoryTest.rs
+    model/Preview.rs         source/target piano-roll and report models
+    frontend/
+      index.html
+      app.js                 shared HTML canvas frontend
+      styles.css
   desktop/                 future Tauri desktop adapter
 ```
 
@@ -309,9 +319,10 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ### 4. Browser inspection and piano roll
 
-- WebAssembly adapter and local browser file loading.
-- Source browser and read-only piano roll.
-- Source/target preview and compatibility report.
+- WebAssembly adapter and local browser file loading. Initial implementation complete.
+- Source browser and read-only piano roll. Initial Session implementation complete.
+- Source/target preview and compatibility report. Initial implementation complete;
+  mapped, lossy, and omitted notes are visually distinct.
 
 ### 5. Samples and devices
 
@@ -337,7 +348,7 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ## Current next step
 
-Run the physical acceptance check for the generated one-track Note bundle, then save
-minimal paired Live 11/12 and Note fixtures. Use their diffs to confirm preset
-hydration, colors, time signatures, and version-specific fields before expanding the
-writer or beginning the browser preview.
+Build the WebAssembly target and inspect paired minimal Live 11/12 fixtures in the
+browser. Run the physical acceptance check for the generated one-track Note bundle,
+then save paired Note fixtures. Use their diffs to confirm preset hydration, colors,
+time signatures, and version-specific fields before beginning samples and devices.

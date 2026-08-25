@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Able Converter · Project Inspector</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">ABLE CONVERTER</p>
+          <h1>Live Set inspector</h1>
+          <p class="lede">
+            Open an Ableton Live Set locally, inspect Session clips, and compare the
+            exact source notes with the Note-bound result.
+          </p>
+        </div>
+        <span class="privacy">LOCAL · NO UPLOAD</span>
+      </header>
+
+      <section id="dropZone" class="drop-zone" tabindex="0" role="button">
+        <input id="fileInput" type="file" accept=".als,application/gzip" hidden />
+        <div class="drop-icon" aria-hidden="true">↧</div>
+        <div>
+          <strong>Drop an .als file here</strong>
+          <span>or tap to choose a Live 11/12 Set</span>
+        </div>
+      </section>
+
+      <p id="status" class="status" aria-live="polite">Ready.</p>
+
+      <section id="workspace" class="workspace" hidden>
+        <div id="summary" class="summary-grid"></div>
+
+        <section class="panel clip-browser">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SESSION</p>
+              <h2>Clip browser</h2>
+            </div>
+            <span id="selectedClipLabel" class="selection-label"></span>
+          </div>
+          <div id="clipList" class="clip-list"></div>
+        </section>
+
+        <section class="roll-grid">
+          <article class="panel roll-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">SOURCE</p>
+                <h2>Live notes</h2>
+              </div>
+              <div class="legend">
+                <span><i class="swatch source"></i>Source</span>
+                <span><i class="swatch lossy"></i>Lossy</span>
+                <span><i class="swatch omitted"></i>Omitted</span>
+              </div>
+            </div>
+            <canvas id="sourceRoll" aria-label="Source piano roll"></canvas>
+          </article>
+
+          <article class="panel roll-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">TARGET</p>
+                <h2>Note output</h2>
+              </div>
+              <div class="legend">
+                <span><i class="swatch mapped"></i>Written</span>
+              </div>
+            </div>
+            <canvas id="targetRoll" aria-label="Target piano roll"></canvas>
+          </article>
+        </section>
+
+        <section class="panel compatibility-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">COMPATIBILITY</p>
+              <h2>Conversion report</h2>
+            </div>
+            <div id="diagnosticCounts" class="diagnostic-counts"></div>
+          </div>
+          <div id="diagnostics" class="diagnostics"></div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
