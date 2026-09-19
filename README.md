@@ -26,6 +26,10 @@ without extracting it to disk.
   explicit track, scene, clip-length, and lossy-feature diagnostics.
 - Serialize `Song.abl` and package it as a stored modern `.ablbundle` with a known
   Analog Drift Core Library preset reference.
+- Read `.caustic` song containers: rack header, section order, machine slot table,
+  per-machine control collections, and provisional transport values.
+- Preserve undecoded machine bodies, section payloads, and inter-section bytes
+  verbatim.
 
 ## Structure
 
@@ -36,12 +40,16 @@ src/
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
     Note.rs            Verified Ableton Note Set JSON subset
+    Caustic.rs         Caustic 3 source models
     InternalTest.rs
     mod.rs
   parser/
     LiveParser.rs      Public Ableton Live parser facade
     LiveParserTest.rs
     live/              Private parser state objects and builders
+    CausticParser.rs   Public Caustic parser facade
+    CausticParserTest.rs
+    caustic/           Private parser state objects and builders
     mod.rs
   mapper/
     LiveToInternalMapper.rs
@@ -58,6 +66,8 @@ src/
     Inspect.rs         Developer inspection utility
 docs/
   implementation-plan.md
+  note-format.md
+  caustic-format.md
 ```
 
 As conversion is implemented, `mapper/`, `exporter/`, and destination model files
@@ -97,6 +107,9 @@ of the caller so the pipeline can be reused from WebAssembly and desktop adapter
 
 The Note schema is undocumented. See `docs/note-format.md` for the implemented
 evidence, provisional behavior, and physical acceptance check.
+
+The Caustic song format is undocumented. See `docs/caustic-format.md` for the
+implemented evidence, provisional behavior, and verification status.
 
 ## Development
 
