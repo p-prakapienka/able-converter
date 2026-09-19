@@ -41,6 +41,7 @@ src/
     Internal.rs        Canonical format-neutral model
     Note.rs            Verified Ableton Note Set JSON subset
     Caustic.rs         Caustic 3 source models
+    CausticTest.rs
     InternalTest.rs
     mod.rs
   parser/
