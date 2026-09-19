@@ -1,5 +1,8 @@
 //! Platform-neutral models shared by parsers, mappers, exporters, and user interfaces.
 
+#[path = "Caustic.rs"]
+pub mod caustic;
+
 #[path = "Internal.rs"]
 pub mod internal;
 
