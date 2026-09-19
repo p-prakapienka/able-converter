@@ -1,6 +1,6 @@
 use crate::model::caustic::{CausticSectionTag, MACHINE_SLOT_COUNT, RACK_HEADER_LENGTH};
 
-use super::caustic::CausticParser;
+use super::CausticParser;
 
 /// Builds synthetic songs byte by byte so no copyrighted project is committed.
 #[derive(Default)]

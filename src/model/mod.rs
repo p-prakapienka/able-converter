@@ -13,6 +13,10 @@ pub mod live;
 pub mod note;
 
 #[cfg(test)]
+#[path = "CausticTest.rs"]
+mod caustictest;
+
+#[cfg(test)]
 #[path = "InternalTest.rs"]
 mod internaltest;
 

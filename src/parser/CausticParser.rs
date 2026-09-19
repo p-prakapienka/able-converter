@@ -43,3 +43,7 @@ impl<R: Read> CausticParser<R> {
         RackParser::new().parse(&data)
     }
 }
+
+#[cfg(test)]
+#[path = "CausticParserTest.rs"]
+mod causticparsertest;

@@ -7,7 +7,3 @@ pub mod live;
 #[cfg(test)]
 #[path = "LiveParserTest.rs"]
 mod liveparsertest;
-
-#[cfg(test)]
-#[path = "CausticParserTest.rs"]
-mod causticparsertest;
