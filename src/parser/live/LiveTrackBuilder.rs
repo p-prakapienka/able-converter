@@ -6,7 +6,7 @@ pub(super) struct LiveTrackBuilder {
     kind: LiveTrackKind,
     effectiveName: String,
     userName: String,
-    color: Option<i32>,
+    colour: Option<i32>,
 }
 
 impl LiveTrackBuilder {
@@ -17,7 +17,7 @@ impl LiveTrackBuilder {
             kind,
             effectiveName: String::new(),
             userName: String::new(),
-            color: None,
+            colour: None,
         }
     }
 
@@ -37,8 +37,8 @@ impl LiveTrackBuilder {
         self.userName = userName;
     }
 
-    pub(super) fn setColor(&mut self, color: Option<i32>) {
-        self.color = color;
+    pub(super) fn setColour(&mut self, colour: Option<i32>) {
+        self.colour = colour;
     }
 
     pub(super) fn finish(self) -> LiveTrack {
@@ -47,7 +47,7 @@ impl LiveTrackBuilder {
             kind: self.kind,
             effectiveName: self.effectiveName,
             userName: self.userName,
-            color: self.color,
+            colour: self.colour,
         }
     }
 }

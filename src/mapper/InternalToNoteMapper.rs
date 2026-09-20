@@ -17,7 +17,7 @@ use crate::model::note::{
 use super::internaltonotemappingcontext::InternalToNoteMappingContext;
 
 const DEFAULT_TEMPO: f64 = 120.0;
-const DEFAULT_COLOR: i32 = 0;
+const DEFAULT_COLOUR: i32 = 0;
 const ANALOG_DRIFT_PRESET_URI: &str =
     "ableton:/packs/abl-core-library/Track%20Presets/Templates/Analog%20Drift.json";
 
@@ -219,7 +219,7 @@ impl InternalToNoteMapper {
     fn mapScene(&self, scene: &Scene) -> NoteScene {
         NoteScene {
             name: scene.name.clone(),
-            color: scene.color,
+            colour: scene.colour,
         }
     }
 
@@ -249,7 +249,7 @@ impl InternalToNoteMapper {
         NoteTrack {
             kind: "midi".to_owned(),
             name: track.name.clone(),
-            color: track.color.unwrap_or(DEFAULT_COLOR),
+            colour: track.colour.unwrap_or(DEFAULT_COLOUR),
             isSelected: trackIndex == 0,
             clipSlots,
             isArmed: false,
@@ -302,7 +302,7 @@ impl InternalToNoteMapper {
             self.mapClip(
                 context,
                 clip,
-                track.color.unwrap_or(DEFAULT_COLOR),
+                track.colour.unwrap_or(DEFAULT_COLOUR),
                 isPlaying,
             )
         })
@@ -312,7 +312,7 @@ impl InternalToNoteMapper {
         &self,
         context: &mut InternalToNoteMappingContext,
         clip: &MidiClip,
-        color: i32,
+        colour: i32,
         isPlaying: bool,
     ) -> Option<NoteMidiClip> {
         let clipLength = clip.contentRange.end.0 - clip.contentRange.start.0;
@@ -359,7 +359,7 @@ impl InternalToNoteMapper {
         Some(NoteMidiClip {
             isPlaying,
             name: clip.name.clone(),
-            color,
+            colour,
             isEnabled: !clip.disabled,
             region: NoteClipRegion {
                 start: clip.contentRange.start.0,
@@ -445,7 +445,7 @@ impl InternalToNoteMapper {
 
     fn createMasterTrack(&self) -> NoteMasterTrack {
         NoteMasterTrack {
-            color: 23,
+            colour: 23,
             isSelected: false,
             devices: Vec::new(),
             mixer: NoteMasterMixer {

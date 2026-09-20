@@ -1,4 +1,4 @@
-//! Serialization and `.ablbundle` packaging for Ableton Note projects.
+//! Serialisation and `.ablbundle` packaging for Ableton Note projects.
 
 use std::io::{Cursor, Write};
 
@@ -13,7 +13,7 @@ const SET_ENTRY_NAME: &str = "Song.abl";
 
 #[derive(Debug, Error)]
 pub enum NoteExportError {
-    #[error("failed to serialize Ableton Note Set JSON: {0}")]
+    #[error("failed to serialise Ableton Note Set JSON: {0}")]
     Json(#[from] serde_json::Error),
     #[error("failed to write Ableton Note bundle: {0}")]
     Archive(#[from] zip::result::ZipError),

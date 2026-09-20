@@ -16,15 +16,15 @@ without extracting it to disk.
 - Read the global tempo when represented by Live's `Tempo/Manual` structure.
 - Parse Session clip placement, bounds, loop settings, notes, velocity, probability,
   release velocity, and enabled state into a Live-specific source model.
-- Parse track identifiers, types, effective/user names, colors, and ordered Session
-  scene names, colors, tempo flags, and time-signature identifiers.
+- Parse track identifiers, types, effective/user names, colours, and ordered Session
+  scene names, colours, tempo flags, and time-signature identifiers.
 - Map Session clips into the canonical model with explicit diagnostics for invalid
   data and unsupported expression or automation.
 - Resolve canonical track names and scene tempo overrides while reporting enabled,
   not-yet-decoded scene time signatures.
 - Map a selected canonical Session grid into a typed Ableton Note Set subset with
   explicit track, scene, clip-length, and lossy-feature diagnostics.
-- Serialize `Song.abl` and package it as a stored modern `.ablbundle` with a known
+- Serialise `Song.abl` and package it as a stored modern `.ablbundle` with a known
   Analog Drift Core Library preset reference.
 
 ## Structure
@@ -51,7 +51,7 @@ src/
     LiveToInternalMapperTest.rs
     mod.rs
   exporter/
-    NoteExporter.rs    Song.abl and .ablbundle serialization
+    NoteExporter.rs    Song.abl and .ablbundle serialisation
     NoteExporterTest.rs
     mod.rs
   tools/
@@ -96,7 +96,7 @@ diagnostics live in private per-call contexts. File access remains the responsib
 of the caller so the pipeline can be reused from WebAssembly and desktop adapters.
 
 The Note schema is undocumented. See `docs/note-format.md` for the implemented
-evidence, provisional behavior, and physical acceptance check.
+evidence, provisional behaviour, and physical acceptance check.
 
 ## Development
 

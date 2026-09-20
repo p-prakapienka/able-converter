@@ -2,7 +2,7 @@
 
 Ableton does not publish the Note/Move Set JSON schema as a supported public API.
 The writer therefore implements only fields corroborated by independently generated
-sets and open-source tools, and keeps unverified behavior explicit.
+sets and open-source tools, and keeps unverified behaviour explicit.
 
 ## Initial verified subset
 
@@ -30,7 +30,7 @@ The initial implementation is based on structural evidence from:
 No source code, commercial preset, project, or sample from either repository is
 vendored into Able Converter.
 
-## Deliberately provisional behavior
+## Deliberately provisional behaviour
 
 The first mapper emits a typed structural subset and references the Analog Drift
 preset rather than embedding opaque preset state. Physical validation must establish
@@ -41,8 +41,8 @@ the writer currently emits C major and 4/4. Scene tempo overrides, non-zero Live
 start-relative values, probability, and muted notes produce diagnostics instead of
 being discarded silently.
 
-Live color identifiers are currently carried through unchanged. Their equivalence to
-Note colors also remains a paired-fixture question.
+Live colour identifiers are currently carried through unchanged. Their equivalence to
+Note colours also remains a paired-fixture question.
 
 ## Physical acceptance check
 
@@ -50,6 +50,6 @@ Note colors also remains a paired-fixture question.
 2. Open it in Ableton Note and confirm that Analog Drift loads and the note plays.
 3. Export or transfer that Set to Live.
 4. Compare tempo, track/scene names, clip and loop bounds, pitch, timing, velocities,
-   color, and device state with the expected canonical project.
+   colour, and device state with the expected canonical project.
 5. Save the smallest synthetic paired fixtures and record every changed field before
    expanding the schema.

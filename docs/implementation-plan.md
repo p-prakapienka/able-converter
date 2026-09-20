@@ -55,7 +55,7 @@ src/
     *Test.rs
     mod.rs
   exporter/
-    NoteExporter.rs         Set JSON and modern bundle serialization
+    NoteExporter.rs         Set JSON and modern bundle serialisation
     *Test.rs
     mod.rs
   tools/
@@ -103,7 +103,7 @@ a canonical project model containing:
 - source tracks and mixer state;
 - Session scenes and clip slots;
 - Arrangement clips and timeline ranges;
-- normalized MIDI notes, loops, and supported automation;
+- normalised MIDI notes, loops, and supported automation;
 - instruments, effects, and sample references;
 - diagnostics for unsupported or lossy data.
 
@@ -153,7 +153,7 @@ The Live reader will:
 2. detect the Live format version;
 3. parse tracks, scenes, clips, locators, devices, and sample references;
 4. keep Session and Arrangement sources distinct;
-5. normalize musical data into the canonical model;
+5. normalise musical data into the canonical model;
 6. report unknown or unsupported structures.
 
 Version-specific XML differences belong behind Live format adapters, not in the
@@ -281,13 +281,13 @@ The final integration check for a generated bundle is:
 - Basic metadata, track, and clip discovery.
 - Synthetic tests and CI.
 
-Acceptance: inspect a real Live 11/12 Set without materializing its XML to disk.
+Acceptance: inspect a real Live 11/12 Set without materialising its XML to disk.
 
 ### 2. Session clip extraction
 
 - Parse Session track and scene placement, MIDI clips, notes, velocity, probability,
   enabled state, and loops. Initial implementation complete with synthetic tests.
-- Parse track identity, type, effective/user names, color, and ordered scene metadata.
+- Parse track identity, type, effective/user names, colour, and ordered scene metadata.
   Initial implementation complete with synthetic tests for Live 11/12 field variants.
 - Populate the canonical model. Initial Live-to-internal mapper complete.
 - Report unsupported note expression, velocity deviation, and automation. Initial
@@ -339,5 +339,5 @@ Acceptance: the generated bundle opens and plays in Note.
 
 Run the physical acceptance check for the generated one-track Note bundle, then save
 minimal paired Live 11/12 and Note fixtures. Use their diffs to confirm preset
-hydration, colors, time signatures, and version-specific fields before expanding the
+hydration, colours, time signatures, and version-specific fields before expanding the
 writer or beginning the browser preview.

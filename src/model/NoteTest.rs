@@ -1,7 +1,7 @@
 use super::note::{NOTE_SCHEMA_URI, NoteProject};
 
 #[test]
-fn deserializesSchemaPropertyIntoTheTypedModel() {
+fn deserialisesSchemaPropertyIntoTheTypedModel() {
     let json = format!(
         r#"{{
             "$schema":"{NOTE_SCHEMA_URI}",

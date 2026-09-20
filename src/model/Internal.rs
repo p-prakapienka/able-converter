@@ -80,7 +80,8 @@ pub struct Track {
     pub id: String,
     pub kind: TrackKind,
     pub name: String,
-    pub color: Option<i32>,
+    #[serde(rename = "color")]
+    pub colour: Option<i32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -88,7 +89,8 @@ pub struct Scene {
     pub id: String,
     pub index: usize,
     pub name: String,
-    pub color: Option<i32>,
+    #[serde(rename = "color")]
+    pub colour: Option<i32>,
     pub tempoOverride: Option<f64>,
 }
 

@@ -60,7 +60,8 @@ pub struct LiveTrack {
     pub kind: LiveTrackKind,
     pub effectiveName: String,
     pub userName: String,
-    pub color: Option<i32>,
+    #[serde(rename = "color")]
+    pub colour: Option<i32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -68,7 +69,8 @@ pub struct LiveScene {
     pub id: String,
     pub index: usize,
     pub name: String,
-    pub color: Option<i32>,
+    #[serde(rename = "color")]
+    pub colour: Option<i32>,
     pub tempo: Option<f64>,
     pub tempoEnabled: bool,
     pub timeSignatureId: Option<i32>,
