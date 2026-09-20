@@ -134,6 +134,26 @@ fn parserReadsTrackNamesAndExplicitSceneMetadata() {
 }
 
 #[test]
+fn parserAcceptsMainTrackWithoutId() {
+    let xml = r#"
+        <Ableton Creator="Ableton Live 12">
+          <LiveSet>
+            <Tracks><MidiTrack Id="42" /></Tracks>
+            <MainTrack />
+          </LiveSet>
+        </Ableton>
+    "#;
+
+    let project = LiveParser::new(gzip(xml).as_slice())
+        .parse()
+        .expect("parse main track fixture");
+
+    assert_eq!(project.tracks.len(), 2);
+    assert_eq!(project.tracks[0].id, "42");
+    assert_eq!(project.tracks[1].id, "MainTrack");
+}
+
+#[test]
 fn parserReadsSessionClipNotesAndLoop() {
     let xml = r#"
         <Ableton MajorVersion="5" MinorVersion="11.0_11300" Creator="Ableton Live 11">

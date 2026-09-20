@@ -102,7 +102,12 @@ impl ProjectMetadataParser {
             return Err(LiveReadError::UnexpectedStructure("track"));
         }
 
-        let id = LiveElement::new(element).requiredAttribute(b"Id", "track", "Id")?;
+        let element = LiveElement::new(element);
+        // Live omits Id on the main track, so fall back to the element name to
+        // keep a stable identifier for downstream track joins.
+        let id = element
+            .attribute(b"Id")?
+            .unwrap_or_else(|| String::from_utf8_lossy(elementName).into_owned());
         self.currentTrack = Some(LiveTrackBuilder::new(elementName, id, kind));
         Ok(())
     }
