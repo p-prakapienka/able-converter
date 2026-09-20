@@ -67,7 +67,7 @@ impl LiveToInternalMapper {
                 LiveTrackKind::Main => TrackKind::Main,
             },
             name,
-            color: track.color,
+            colour: track.colour,
         }
     }
 
@@ -105,7 +105,7 @@ impl LiveToInternalMapper {
             id: scene.id.clone(),
             index: scene.index,
             name: scene.name.clone(),
-            color: scene.color,
+            colour: scene.colour,
             tempoOverride,
         }
     }

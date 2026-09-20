@@ -39,7 +39,8 @@ pub struct NoteTimeSignature {
 pub struct NoteTrack {
     pub kind: String,
     pub name: String,
-    pub color: i32,
+    #[serde(rename = "color")]
+    pub colour: i32,
     pub isSelected: bool,
     pub clipSlots: Vec<NoteClipSlot>,
     pub isArmed: bool,
@@ -63,7 +64,8 @@ pub struct NoteClipSlot {
 pub struct NoteMidiClip {
     pub isPlaying: bool,
     pub name: String,
-    pub color: i32,
+    #[serde(rename = "color")]
+    pub colour: i32,
     pub isEnabled: bool,
     pub region: NoteClipRegion,
     pub grooveId: u32,
@@ -127,7 +129,8 @@ pub struct NoteDevice {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NoteDeviceChain {
     pub name: String,
-    pub color: i32,
+    #[serde(rename = "color")]
+    pub colour: i32,
     pub devices: Vec<NoteDevice>,
     pub mixer: NoteMixer,
 }
@@ -150,7 +153,8 @@ pub struct NoteSend {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NoteMasterTrack {
-    pub color: i32,
+    #[serde(rename = "color")]
+    pub colour: i32,
     pub isSelected: bool,
     pub devices: Vec<NoteDevice>,
     pub mixer: NoteMasterMixer,
@@ -165,7 +169,8 @@ pub struct NoteMasterMixer {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NoteScene {
     pub name: String,
-    pub color: Option<i32>,
+    #[serde(rename = "color")]
+    pub colour: Option<i32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

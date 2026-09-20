@@ -18,7 +18,7 @@ dependency boundary justifies extracting another crate.
 - `src/parser/` converts source bytes into a source model.
 - `src/mapper/` converts source models to the canonical model and the canonical
   model to destination models.
-- `src/exporter/` serializes destination models into project bytes.
+- `src/exporter/` serialises destination models into project bytes.
 - `src/tools/` contains developer targets, not product interfaces.
 - Future `src/web/` and `src/desktop/` adapters depend inward on the library.
 
@@ -35,7 +35,7 @@ source bytes -> source parser -> source model -> source-to-internal mapper
 Do not add direct format-pair mappers such as `LiveNoteMapper`; all formats use the
 canonical internal model.
 
-## Source organization
+## Source organisation
 
 - Keep all Rust implementation and test code under `src/`.
 - Use lowercase folder names.
@@ -44,6 +44,10 @@ canonical internal model.
 - Use Java package-style lowercase module identifiers, concatenating words without
   underscores. Use lowerCamelCase for functions, methods, fields, variables,
   arguments, and test functions. Keep types and traits UpperCamelCase.
+- Use British spelling in prose, comments, and project-owned identifiers
+  (`serialise`, `behaviour`, `colour`, `normalise`). Keep external names
+  byte-identical, including serde derives, format wire keys, fixtures, engine
+  symbol quotes, and product names.
 - Connect CamelCase paths to lowercase Rust module names with explicit `#[path]`
   declarations in the nearest `mod.rs`.
 - Add `#![allow(non_snake_case)]` at each crate root because this project deliberately
@@ -64,8 +68,8 @@ canonical internal model.
 - Keep mappers and exporters reusable and stateless when they have no dependencies
   or configuration. Pass conversion input to their use-case methods and keep mutable
   per-call state in private context objects. Parsers may own consumable input streams.
-- Keep models data-oriented unless they enforce domain invariants or behavior.
-- Put behavior belonging to an architectural component in private methods on that
+- Keep models data-oriented unless they enforce domain invariants or behaviour.
+- Put behaviour belonging to an architectural component in private methods on that
   component, even if a method does not yet access fields. Module-level privacy is not
   object encapsulation. Keep a private module function only when it is genuinely
   independent of every object in that module.

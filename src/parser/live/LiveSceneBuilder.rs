@@ -4,7 +4,7 @@ pub(super) struct LiveSceneBuilder {
     id: String,
     index: usize,
     name: String,
-    color: Option<i32>,
+    colour: Option<i32>,
     tempo: Option<f64>,
     tempoEnabled: bool,
     timeSignatureId: Option<i32>,
@@ -17,7 +17,7 @@ impl LiveSceneBuilder {
             id,
             index,
             name: String::new(),
-            color: None,
+            colour: None,
             tempo: None,
             tempoEnabled: false,
             timeSignatureId: None,
@@ -29,8 +29,8 @@ impl LiveSceneBuilder {
         self.name = name;
     }
 
-    pub(super) fn setColor(&mut self, color: Option<i32>) {
-        self.color = color;
+    pub(super) fn setColour(&mut self, colour: Option<i32>) {
+        self.colour = colour;
     }
 
     pub(super) fn setTempo(&mut self, tempo: Option<f64>) {
@@ -54,7 +54,7 @@ impl LiveSceneBuilder {
             id: self.id,
             index: self.index,
             name: self.name,
-            color: self.color,
+            colour: self.colour,
             tempo: self.tempo,
             tempoEnabled: self.tempoEnabled,
             timeSignatureId: self.timeSignatureId,

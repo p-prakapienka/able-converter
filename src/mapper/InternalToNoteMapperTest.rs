@@ -94,7 +94,7 @@ fn reportsLimitsBeforeCreatingAnExplicitlyTruncatedGrid() {
             id: format!("track-{index}"),
             kind: TrackKind::Midi,
             name: format!("Track {index}"),
-            color: None,
+            colour: None,
         })
         .collect();
     source.scenes = (0..NOTE_SCENE_LIMIT + 1)
@@ -102,7 +102,7 @@ fn reportsLimitsBeforeCreatingAnExplicitlyTruncatedGrid() {
             id: format!("scene-{index}"),
             index,
             name: format!("Scene {index}"),
-            color: None,
+            colour: None,
             tempoOverride: None,
         })
         .collect();
@@ -140,13 +140,13 @@ fn projectWithClip() -> Project {
             id: "track-1".to_owned(),
             kind: TrackKind::Midi,
             name: "Lead".to_owned(),
-            color: Some(10),
+            colour: Some(10),
         }],
         scenes: vec![Scene {
             id: "scene-3".to_owned(),
             index: 3,
             name: "Verse".to_owned(),
-            color: Some(6),
+            colour: Some(6),
             tempoOverride: None,
         }],
         midiClips: vec![MidiClip {

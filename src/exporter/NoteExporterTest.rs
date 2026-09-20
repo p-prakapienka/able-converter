@@ -45,13 +45,13 @@ fn projectWithOneNote() -> Project {
             id: "track-1".to_owned(),
             kind: TrackKind::Midi,
             name: "Lead".to_owned(),
-            color: Some(10),
+            colour: Some(10),
         }],
         scenes: vec![Scene {
             id: "scene-1".to_owned(),
             index: 0,
             name: "Intro".to_owned(),
-            color: Some(4),
+            colour: Some(4),
             tempoOverride: None,
         }],
         midiClips: vec![MidiClip {

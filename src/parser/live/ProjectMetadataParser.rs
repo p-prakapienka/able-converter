@@ -138,8 +138,8 @@ impl ProjectMetadataParser {
                 _ => {}
             }
         } else if name == b"Color" && self.isDirectTrackChild(parent) {
-            let color = element.optionalNumberValue("track Color")?;
-            self.currentTrackMut()?.setColor(color);
+            let colour = element.optionalNumberValue("track Colour")?;
+            self.currentTrackMut()?.setColour(colour);
         }
 
         if parent == Some(b"Scene") && self.currentScene.is_some() {
@@ -149,8 +149,8 @@ impl ProjectMetadataParser {
                     self.currentSceneMut()?.setName(name);
                 }
                 b"Color" | b"ColorIndex" => {
-                    let color = element.optionalNumberValue("Scene Color")?;
-                    self.currentSceneMut()?.setColor(color);
+                    let colour = element.optionalNumberValue("Scene Colour")?;
+                    self.currentSceneMut()?.setColour(colour);
                 }
                 b"Tempo" => {
                     let tempo = element.optionalNumberValue("Scene Tempo")?;

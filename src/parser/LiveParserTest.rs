@@ -114,7 +114,7 @@ fn parserReadsTrackNamesAndExplicitSceneMetadata() {
     assert_eq!(project.tracks[0].id, "42");
     assert_eq!(project.tracks[0].effectiveName, "1-MIDI");
     assert_eq!(project.tracks[0].userName, "Bass");
-    assert_eq!(project.tracks[0].color, Some(10));
+    assert_eq!(project.tracks[0].colour, Some(10));
     assert_eq!(project.tracks[1].effectiveName, "2-Audio");
     assert_eq!(project.tracks[1].userName, "");
 
@@ -122,13 +122,13 @@ fn parserReadsTrackNamesAndExplicitSceneMetadata() {
     assert_eq!(project.scenes[0].id, "9");
     assert_eq!(project.scenes[0].index, 0);
     assert_eq!(project.scenes[0].name, "Intro");
-    assert_eq!(project.scenes[0].color, Some(5));
+    assert_eq!(project.scenes[0].colour, Some(5));
     assert_eq!(project.scenes[0].tempo, Some(128.0));
     assert!(project.scenes[0].tempoEnabled);
     assert_eq!(project.scenes[0].timeSignatureId, Some(201));
     assert!(project.scenes[0].timeSignatureEnabled);
     assert_eq!(project.scenes[1].index, 1);
-    assert_eq!(project.scenes[1].color, Some(6));
+    assert_eq!(project.scenes[1].colour, Some(6));
     assert!(!project.scenes[1].tempoEnabled);
     assert!(!project.scenes[1].timeSignatureEnabled);
 }
