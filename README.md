@@ -30,6 +30,10 @@ without extracting it to disk.
   and target preview data with a combined compatibility report.
 - Browse Session clips and render read-only source/target piano rolls in the browser,
   distinguishing mapped, lossy, and omitted notes.
+- Read `.caustic` song containers: rack header, section order, machine slot table,
+  per-machine control collections, and provisional transport values.
+- Preserve undecoded machine bodies, section payloads, and inter-section bytes
+  verbatim.
 
 ## Structure
 
@@ -40,12 +44,17 @@ src/
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
     Note.rs            Verified Ableton Note Set JSON subset
+    Caustic.rs         Caustic 3 source models
+    CausticTest.rs
     InternalTest.rs
     mod.rs
   parser/
     LiveParser.rs      Public Ableton Live parser facade
     LiveParserTest.rs
     live/              Private parser state objects and builders
+    CausticParser.rs   Public Caustic parser facade
+    CausticParserTest.rs
+    caustic/           Private parser state objects and builders
     mod.rs
   mapper/
     LiveToInternalMapper.rs
@@ -73,6 +82,8 @@ src/
       styles.css
 docs/
   implementation-plan.md
+  note-format.md
+  caustic-format.md
 ```
 
 As conversion is implemented, `mapper/`, `exporter/`, and destination model files
@@ -112,6 +123,9 @@ of the caller so the pipeline can be reused from WebAssembly and desktop adapter
 
 The Note schema is undocumented. See `docs/note-format.md` for the implemented
 evidence, provisional behavior, and physical acceptance check.
+
+The Caustic song format is undocumented. See `docs/caustic-format.md` for the
+implemented evidence, provisional behavior, and verification status.
 
 ## Running the browser inspector
 
