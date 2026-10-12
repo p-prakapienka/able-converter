@@ -36,11 +36,13 @@ impl SongBuilder {
         self
     }
 
-    fn withMachine(mut self, name: &str, controls: &[(u32, f32)], body: &[u8]) -> Self {
+    fn withMachine(self, name: &str, controls: &[(u32, f32)], body: &[u8]) -> Self {
         let mut payload = Vec::new();
         if !controls.is_empty() {
             let mut collection = Vec::new();
             for (id, value) in controls {
+                collection.extend_from_slice(b"CTRL");
+                collection.extend_from_slice(&8u32.to_le_bytes());
                 collection.extend_from_slice(&id.to_le_bytes());
                 collection.extend_from_slice(&value.to_le_bytes());
             }
@@ -49,14 +51,17 @@ impl SongBuilder {
             payload.extend_from_slice(&collection);
         }
         payload.extend_from_slice(body);
+        self.withMachinePayload(name, &payload)
+    }
 
+    fn withMachinePayload(mut self, name: &str, payload: &[u8]) -> Self {
         let mut fixedName = name.as_bytes().to_vec();
         fixedName.resize(10, 0);
         self.body.extend_from_slice(&fixedName);
         self.body.extend_from_slice(&[1, 2, 3, 4]);
         self.body
             .extend_from_slice(&(payload.len() as u32).to_le_bytes());
-        self.body.extend_from_slice(&payload);
+        self.body.extend_from_slice(payload);
         self
     }
 
@@ -155,6 +160,83 @@ fn parserReadsOccupiedSlotsWithControlCollections() {
     assert_eq!(drums.machineId, "PCMS");
     assert!(drums.controls.is_none());
     assert_eq!(drums.body, vec![42]);
+}
+
+fn controlCollection(entries: &[(&[u8; 4], u32, &[u8])]) -> Vec<u8> {
+    let mut collection = Vec::new();
+    for (tag, length, bytes) in entries {
+        collection.extend_from_slice(*tag);
+        collection.extend_from_slice(&length.to_le_bytes());
+        collection.extend_from_slice(bytes);
+    }
+    let mut chunk = b"CCOL".to_vec();
+    chunk.extend_from_slice(&(collection.len() as u32).to_le_bytes());
+    chunk.extend_from_slice(&collection);
+    chunk
+}
+
+#[test]
+fn parserReadsEachControlFromItsOwnCtrlChunk() {
+    let mut first = 3u32.to_le_bytes().to_vec();
+    first.extend_from_slice(&0.5f32.to_le_bytes());
+    let mut second = 12u32.to_le_bytes().to_vec();
+    second.extend_from_slice(&1.0f32.to_le_bytes());
+    let mut payload = controlCollection(&[(b"CTRL", 8, &first), (b"CTRL", 8, &second)]);
+    payload.extend_from_slice(&[7, 7]);
+
+    let song = SongBuilder::new()
+        .withOutputPanel(120.0, 4)
+        .withSlotTable(&[(0, "PADS")])
+        .withMachinePayload("Pad", &payload)
+        .finish();
+
+    let project = CausticParser::new(song.as_slice())
+        .parse()
+        .expect("parse fixture");
+
+    let pad = &project.machines[0];
+    let controls = pad.controls.as_ref().expect("control collection");
+    assert_eq!(controls.controls.len(), 2);
+    assert_eq!(controls.valueOf(3), Some(0.5));
+    assert_eq!(controls.valueOf(12), Some(1.0));
+    assert_eq!(pad.body, vec![7, 7]);
+}
+
+#[test]
+fn parserRejectsControlEntriesThatAreNotCtrlChunks() {
+    let mut pair = 3u32.to_le_bytes().to_vec();
+    pair.extend_from_slice(&0.5f32.to_le_bytes());
+    let payload = controlCollection(&[(b"CTRL", 8, &pair), (b"XXXX", 8, &pair)]);
+
+    let song = SongBuilder::new()
+        .withOutputPanel(120.0, 4)
+        .withSlotTable(&[(0, "PADS")])
+        .withMachinePayload("Pad", &payload)
+        .finish();
+
+    let error = CausticParser::new(song.as_slice())
+        .parse()
+        .expect_err("reject fixture");
+
+    assert!(error.to_string().contains("offset 16"));
+    assert!(error.to_string().contains("XXXX"));
+}
+
+#[test]
+fn parserRejectsControlChunksOfTheWrongLength() {
+    let payload = controlCollection(&[(b"CTRL", 4, &3u32.to_le_bytes())]);
+
+    let song = SongBuilder::new()
+        .withOutputPanel(120.0, 4)
+        .withSlotTable(&[(0, "PADS")])
+        .withMachinePayload("Pad", &payload)
+        .finish();
+
+    let error = CausticParser::new(song.as_slice())
+        .parse()
+        .expect_err("reject fixture");
+
+    assert!(error.to_string().contains("length 4"));
 }
 
 #[test]

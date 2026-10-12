@@ -17,8 +17,9 @@ evidence, and preserves every byte it cannot explain.
   machine and effect type.
 - **Chunk identifiers.** `RACK`, `OUTP`, `EFFX`, `MIXR`, `MSTR`, `SEQN`, `CCOL`,
   `SPAT`, `MCOM`, and `NULL` all appear as literals in the binary's `.rodata`.
-  `UIControlCollection::Serialize` reads a four-byte tag and compares its first
-  byte against `0x43`, the `C` of `CCOL`.
+  `UIControlCollection::Serialize` reads a four-byte tag and compares it
+  byte by byte against `CCOL`, and reads each entry's tag against `CTRL` the
+  same way.
 - **Machine identifiers.** `SSYN`, `PCMS`, `BBOX`, `PADS`, `8SYN`, `MDLR`, `ORGN`,
   `VCDR`, `FMSN`, `KSSN`, `SAWS`, and `BLNE` appear as literals and correspond to
   the machine classes that implement `Serialize(Archive&)`.
@@ -40,10 +41,17 @@ evidence, and preserves every byte it cannot explain.
   An unoccupied slot is written as `NULL`.
 - Each occupied slot is then written in slot order as a 10-byte name, four
   undecoded header bytes, a `u32` payload length, and that many payload bytes.
-- A machine payload usually opens with a `CCOL` chunk: a tag, a `u32` length, and
-  `length / 8` pairs of a `u32` control identifier and an `f32` value. Control
-  names are not stored; the engine resolves them through per-machine tables
-  (`GetControlIDFromName` is implemented by 57 classes).
+- A machine payload usually opens with a `CCOL` chunk: a tag and a `u32` length,
+  then one `CTRL` chunk per control. Each `CTRL` chunk is the tag, a `u32` length
+  of 8, a `u32` control identifier and an `f32` value, so 16 bytes per control.
+  `UIControlCollection::Serialize` writes exactly that for every saved control,
+  patching both lengths afterwards with `ftell`/`fseek`, and on load reads the
+  tag, the length, the identifier and the value in that order. DawVert also
+  iterates `CCOL` as nested chunks. The engine writes no other entry kind and
+  its reader does not skip one, so the parser rejects any entry that is not a
+  `CTRL` chunk of length 8. Control names are not stored; the engine resolves
+  them through per-machine tables (`GetControlIDFromName` is implemented by 57
+  classes).
 
 ## Deliberately provisional behavior
 

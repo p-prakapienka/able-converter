@@ -24,6 +24,14 @@ pub enum CausticReadError {
         structure: &'static str,
         field: &'static str,
     },
+    #[error(
+        "control collection entry at offset {offset} is {tag:?} with length {length}; expected \"CTRL\" with length 8"
+    )]
+    UnexpectedControlEntry {
+        offset: usize,
+        tag: String,
+        length: usize,
+    },
     #[error("machine slot {slot} declares identifier {machineId} which is not four characters")]
     InvalidMachineId { slot: usize, machineId: String },
 }
