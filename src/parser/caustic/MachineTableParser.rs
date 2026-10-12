@@ -4,7 +4,7 @@ use crate::model::caustic::{
 
 use super::bytecursor::ByteCursor;
 use super::causticreaderror::CausticReadError;
-use super::controlcollectionparser::ControlCollectionParser;
+use super::controlcollectionparser::{CONTROL_COLLECTION_TAG, ControlCollectionParser};
 
 /// Bytes holding a machine identifier in the slot table.
 const MACHINE_ID_LENGTH: usize = 4;
@@ -17,6 +17,9 @@ const MACHINE_NAME_LENGTH: usize = 10;
 
 /// Bytes written between a machine name and its payload length.
 const MACHINE_HEADER_LENGTH: usize = 4;
+
+/// Bytes of the version word some machine blocks write before their controls.
+const BLOCK_VERSION_LENGTH: usize = 4;
 
 /// Reads the fixed slot table and the machine payloads that follow it.
 #[derive(Default)]
@@ -81,6 +84,7 @@ impl MachineTableParser {
         let length = cursor.readLength("machine entry")?;
 
         let mut payload = ByteCursor::new(cursor.readBytes("machine payload", length)?);
+        let blockVersion = self.parseBlockVersion(&mut payload)?;
         let controls = self.controlCollectionParser.parseOptional(&mut payload)?;
         let remaining = payload.remaining();
         let body = payload.readVec("machine payload", remaining)?;
@@ -90,8 +94,33 @@ impl MachineTableParser {
             machineId: slot.machineId.clone(),
             name,
             headerBytes,
+            blockVersion,
             controls,
             body,
         })
+    }
+
+    /// Read the block version that precedes the control collection in most
+    /// machine payloads.
+    ///
+    /// `SubSynth::Serialize` writes a `u32` version (`0x03010000`) between its
+    /// block length and `UIControlCollection::Serialize`, while
+    /// `PadSynth::Serialize` and `Organ::Serialize` go straight to the
+    /// collection. The word is only taken as a version when a `CCOL` tag
+    /// follows it, so payloads with any other opening are left untouched.
+    fn parseBlockVersion(
+        &self,
+        payload: &mut ByteCursor<'_>,
+    ) -> Result<Option<u32>, CausticReadError> {
+        if payload.peekTag().as_ref() == Some(CONTROL_COLLECTION_TAG) {
+            return Ok(None);
+        }
+
+        let afterVersion = payload.position() + BLOCK_VERSION_LENGTH;
+        if payload.peekTagAt(afterVersion).as_ref() != Some(CONTROL_COLLECTION_TAG) {
+            return Ok(None);
+        }
+
+        Ok(Some(payload.readU32("machine block version")?))
     }
 }

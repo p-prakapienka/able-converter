@@ -147,6 +147,7 @@ fn parserReadsOccupiedSlotsWithControlCollections() {
     assert_eq!(lead.machineId, "SSYN");
     assert_eq!(lead.name, "Lead");
     assert_eq!(lead.headerBytes, vec![1, 2, 3, 4]);
+    assert_eq!(lead.blockVersion, None);
     assert_eq!(lead.body, vec![9, 9, 9]);
 
     let controls = lead.controls.as_ref().expect("control collection");
@@ -200,6 +201,49 @@ fn parserReadsEachControlFromItsOwnCtrlChunk() {
     assert_eq!(controls.valueOf(3), Some(0.5));
     assert_eq!(controls.valueOf(12), Some(1.0));
     assert_eq!(pad.body, vec![7, 7]);
+}
+
+#[test]
+fn parserReadsTheBlockVersionAheadOfTheControlCollection() {
+    let mut pair = 3u32.to_le_bytes().to_vec();
+    pair.extend_from_slice(&0.5f32.to_le_bytes());
+    let mut payload = 0x0301_0000u32.to_le_bytes().to_vec();
+    payload.extend_from_slice(&controlCollection(&[(b"CTRL", 8, &pair)]));
+    payload.extend_from_slice(b"rest");
+
+    let song = SongBuilder::new()
+        .withOutputPanel(120.0, 4)
+        .withSlotTable(&[(0, "SSYN")])
+        .withMachinePayload("Lead", &payload)
+        .finish();
+
+    let project = CausticParser::new(song.as_slice())
+        .parse()
+        .expect("parse fixture");
+
+    let lead = &project.machines[0];
+    assert_eq!(lead.blockVersion, Some(0x0301_0000));
+    let controls = lead.controls.as_ref().expect("control collection");
+    assert_eq!(controls.valueOf(3), Some(0.5));
+    assert_eq!(lead.body, b"rest".to_vec());
+}
+
+#[test]
+fn parserLeavesPayloadsWithoutACollectionAfterTheFirstWordAlone() {
+    let song = SongBuilder::new()
+        .withOutputPanel(120.0, 4)
+        .withSlotTable(&[(0, "MDLR")])
+        .withMachinePayload("Modular", &[1, 0, 0, 0, b'S', b'L', b'O', b'T'])
+        .finish();
+
+    let project = CausticParser::new(song.as_slice())
+        .parse()
+        .expect("parse fixture");
+
+    let modular = &project.machines[0];
+    assert_eq!(modular.blockVersion, None);
+    assert!(modular.controls.is_none());
+    assert_eq!(modular.body, vec![1, 0, 0, 0, b'S', b'L', b'O', b'T']);
 }
 
 #[test]

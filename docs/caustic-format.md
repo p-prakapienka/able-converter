@@ -40,7 +40,18 @@ evidence, and preserves every byte it cannot explain.
   it. It holds 14 entries of a four-byte machine identifier plus one padding byte.
   An unoccupied slot is written as `NULL`.
 - Each occupied slot is then written in slot order as a 10-byte name, four
-  undecoded header bytes, a `u32` payload length, and that many payload bytes.
+  header bytes, a `u32` payload length, and that many payload bytes. The four
+  bytes and the length sit where each machine's `Serialize(Archive&)` writes its
+  own block tag and block length (`SubSynth::Serialize` writes `SSYN` and checks
+  for it on load); the bytes are kept as written.
+- Most machine payloads open with a `u32` block version before their control
+  collection. `SubSynth::Serialize` writes `0x03010000` and branches on it when
+  loading; `PadSynth::Serialize` and `Organ::Serialize` call
+  `UIControlCollection::Serialize` straight after the length. DawVert reads a
+  leading version word (as `u16`, `u8`, `u8`) for `SSYN`, `BLNE`, `FMSN`,
+  `KSSN`, `SAWS`, `8SYN`, `BBOX`, `VCDR` and `PCMS`, and none for `PADS` and
+  `ORGN`. The parser takes the first word as the block version only when a
+  `CCOL` tag follows it.
 - A machine payload usually opens with a `CCOL` chunk: a tag and a `u32` length,
   then one `CTRL` chunk per control. Each `CTRL` chunk is the tag, a `u32` length
   of 8, a `u32` control identifier and an `f32` value, so 16 bytes per control.
@@ -64,7 +75,9 @@ evidence, and preserves every byte it cannot explain.
   and only when a recognised tag follows it, keeping the bytes on the preceding
   section. Anything else ends section parsing and is preserved as trailing bytes.
 - **Machine bodies.** Everything after a machine's control collection is kept as
-  raw bytes. Per-machine field layouts are recoverable from each class's
+  raw bytes. The block version is read but not interpreted; older block
+  versions change the layout that follows (SubSynth has fields that appear at
+  1.1, 2.0, 3.0 and 3.1), which is why the body stays raw. Per-machine field layouts are recoverable from each class's
   `Serialize(Archive&)` implementation, which writes fields in source order through
   `Archive::Serialize(&field, size)`, but none of them are decoded yet.
 - **`SPAT` and `MCOM`.** Pattern and modular chunks are present in the binary and

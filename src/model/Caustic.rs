@@ -88,8 +88,15 @@ pub struct CausticMachine {
     /// Display name as stored in the slot entry.
     pub name: String,
     /// Four bytes written between the machine name and its payload length.
+    /// They are where the machine's own `Serialize` writes its block tag, which
+    /// for SubSynth is `SSYN`, but they are kept as written.
     pub headerBytes: Vec<u8>,
-    /// Control collection when the machine body opens with a `CCOL` chunk.
+    /// The machine block's own format version, when the payload opens with a
+    /// `u32` version ahead of its control collection. `SubSynth::Serialize`
+    /// writes `0x03010000` there; PadSynth and Organ write no version.
+    pub blockVersion: Option<u32>,
+    /// Control collection when the machine body opens with a `CCOL` chunk,
+    /// directly or after the block version.
     pub controls: Option<CausticControlCollection>,
     /// Machine body after any leading control collection, kept verbatim because
     /// per-machine field layouts are not decoded yet.
