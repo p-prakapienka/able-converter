@@ -128,6 +128,17 @@ pub enum DiagnosticCode {
     UnsupportedNoteProbability,
     UnsupportedLoopStartRelative,
     UnsupportedSceneTempoOverride,
+    UnsupportedSwing,
+    UnsupportedGroove,
+    UnsupportedKeyScale,
+    UnsupportedPatternMix,
+    UnsupportedPatternChain,
+    UnsupportedAlternateChoke,
+    UnsupportedInstrumentSettings,
+    UnsupportedPartMute,
+    ApproximatedPartLoop,
+    OmittedInactiveSteps,
+    UnknownPatternSelection,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

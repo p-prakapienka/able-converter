@@ -24,6 +24,10 @@ from controlled fixtures.
 
 The first supported source is Ableton Live 11 and 12 `.als`: GZIP-compressed XML.
 
+The second source is the Korg electribe sampler: single-pattern `.e2spat` and
+all-pattern `.e2sallpat` files. Their layout and semantics are documented in
+`docs/electribe-format.md`.
+
 ## Architecture
 
 Start with one `able-converter` crate. Use Rust modules for internal boundaries and
@@ -33,14 +37,17 @@ extract crates only when a real build-target or dependency constraint appears.
 src/
   lib.rs
   model/
+    Electribe.rs
     Live.rs
     Internal.rs
     Note.rs                 verified Note Set JSON subset
     *Test.rs
     mod.rs
   parser/
+    ElectribeParser.rs        public electribe parser facade
     LiveParser.rs             public parser facade only
     *Test.rs
+    electribe/                private electribe readers, one struct per file
     live/                     private Live parser collaborators
       InspectionBuilder.rs
       ProjectMetadataParser.rs
@@ -48,8 +55,11 @@ src/
       ...                     one struct/impl per file
     mod.rs
   mapper/
+    ElectribeToInternalMapper.rs
     LiveToInternalMapper.rs
     InternalToNoteMapper.rs
+    electribetointernal/MappingContext.rs
+    electribetointernal/StepTimeline.rs
     livetointernal/MappingContext.rs
     internaltonote/MappingContext.rs
     *Test.rs
@@ -134,8 +144,19 @@ The concrete conversion pipeline is:
   -> .ablbundle bytes
 ```
 
-This avoids pairwise mappers such as `LiveNoteMapper`. A future Caustic importer only
-needs `CausticParser` and `CausticToInternalMapper`; the Note half is reused.
+This avoids pairwise mappers such as `LiveNoteMapper`. The electribe sampler importer
+follows the same rule with `ElectribeParser` and `ElectribeToInternalMapper`; a future
+Caustic importer only needs `CausticParser` and `CausticToInternalMapper`. The Note half
+is reused.
+
+## electribe sampler mapping
+
+Parts map to MIDI tracks and patterns map to Session scenes. Each part holding note data
+in a pattern becomes a looping Session clip. A pattern holds sixteen parts, so the user
+selects up to eight parts and eight patterns; the Note mapper reports anything over its
+limits. Swing, grooves, key and scale, master effect, chains, alternate choke, motion
+sequences and part sound settings are reported rather than mapped. Sample pools
+(`e2sSample.all`) and event recordings (`.e2sev`) remain future work.
 
 ## Format discovery
 
@@ -323,6 +344,18 @@ Acceptance: the generated bundle opens and plays in Note.
 - Source browser and read-only piano roll. Initial Session implementation complete.
 - Source/target preview and compatibility report. Initial implementation complete;
   mapped, lossy, and omitted notes are visually distinct.
+
+### 4a. electribe sampler patterns
+
+- Parse `.e2spat` and `.e2sallpat` into an electribe source model. Initial implementation
+  complete with synthetic tests.
+- Map parts, patterns, steps, ties and chords into the canonical model with diagnostics
+  for every unmapped feature. Initial implementation complete; a real 250-pattern export
+  was checked against an independent decoder.
+- Developer `inspect` and `convert` accept electribe files with pattern and part
+  selection.
+- Next: map pattern chains to scene order, swing and grooves once Note groove semantics
+  are verified, and the sample pool once the sample pipeline exists.
 
 ### 5. Samples and devices
 

@@ -1,7 +1,7 @@
 # Able Converter
 
-Able Converter is a local-first tool for inspecting Ableton Live Sets and mapping
-selected clips into Ableton Note projects.
+Able Converter is a local-first tool for inspecting Ableton Live Sets and Korg
+electribe sampler patterns and mapping selected clips into Ableton Note projects.
 
 The project is at the format-discovery and parser-foundation stage. The current
 library can inspect the high-level structure of a gzip-compressed `.als` stream
@@ -30,6 +30,9 @@ without extracting it to disk.
   and target preview data with a combined compatibility report.
 - Browse Session clips and render read-only source/target piano rolls in the browser,
   distinguishing mapped, lossy, and omitted notes.
+- Read Korg electribe sampler `.e2spat` and `.e2sallpat` pattern files and map parts to
+  tracks, patterns to scenes, and steps (gate, ties, chords, velocity) to notes, with
+  diagnostics for every unmapped feature. See `docs/electribe-format.md`.
 
 ## Structure
 
@@ -37,17 +40,22 @@ without extracting it to disk.
 src/
   lib.rs
   model/
+    Electribe.rs       Korg electribe sampler source models
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
     Note.rs            Verified Ableton Note Set JSON subset
     InternalTest.rs
     mod.rs
   parser/
+    ElectribeParser.rs Public electribe sampler parser facade
+    electribe/         Private electribe readers
     LiveParser.rs      Public Ableton Live parser facade
     LiveParserTest.rs
     live/              Private parser state objects and builders
     mod.rs
   mapper/
+    ElectribeToInternalMapper.rs
+    electribetointernal/   Private mapping context and step timeline
     LiveToInternalMapper.rs
     InternalToNoteMapper.rs
     livetointernal/        Private per-call mapping context
@@ -72,6 +80,7 @@ src/
       app.js           Shared canvas frontend
       styles.css
 docs/
+  electribe-format.md
   implementation-plan.md
 ```
 
@@ -101,6 +110,14 @@ cargo run --example convert -- path/to/project.als path/to/output.ablbundle
 
 The converter prints all diagnostics and refuses to write an output bundle when any
 error diagnostic is present.
+
+electribe sampler files use the same tools. Choose up to eight patterns and parts:
+
+```bash
+cargo run --example inspect -- path/to/all.e2sallpat
+cargo run --example convert -- path/to/all.e2sallpat out.ablbundle --patterns 4-7 --parts 1,2,3,6
+cargo run --example convert -- path/to/one.e2spat out.ablbundle
+```
 
 The library API exposes `parser::live::LiveParser` for inspection and Session clip
 extraction, followed by `mapper::livetointernal::LiveToInternalMapper` for canonical

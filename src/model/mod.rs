@@ -1,5 +1,8 @@
 //! Platform-neutral models shared by parsers, mappers, exporters, and user interfaces.
 
+#[path = "Electribe.rs"]
+pub mod electribe;
+
 #[path = "Internal.rs"]
 pub mod internal;
 
