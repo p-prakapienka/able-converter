@@ -137,6 +137,12 @@ The concrete conversion pipeline is:
 This avoids pairwise mappers such as `LiveNoteMapper`. A future Caustic importer only
 needs `CausticParser` and `CausticToInternalMapper`; the Note half is reused.
 
+Digitone II is a separate source on `feature/digitone-ii-parser`. `DigitoneIiParser`
+and `DigitoneIiExporter` read and write `.dn2prj` containers, preserving every byte
+that public format research does not explain. They do not map into or out of the
+canonical model, and they do not change the Live or Note path. The field list and
+its limits are in `docs/digitone-ii-format.md`.
+
 ## Format discovery
 
 Create paired synthetic fixtures for every mapped property:

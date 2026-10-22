@@ -30,6 +30,10 @@ without extracting it to disk.
   and target preview data with a combined compatibility report.
 - Browse Session clips and render read-only source/target piano rolls in the browser,
   distinguishing mapped, lossy, and omitted notes.
+- Read a Digitone II `.dn2prj` project, or a raw container, and write it back.
+  Decoded fields are the project name, pattern trigs, kit and sound names, track
+  levels, and the version-3 MIDI-track mask. Unknown bytes are preserved.
+  Mapping a Digitone project into the canonical model is not implemented.
 
 ## Structure
 
