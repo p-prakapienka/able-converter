@@ -128,6 +128,17 @@ pub enum DiagnosticCode {
     UnsupportedNoteProbability,
     UnsupportedLoopStartRelative,
     UnsupportedSceneTempoOverride,
+    InvalidPoolReference,
+    UnknownTrackKind,
+    UnsupportedPartKind,
+    MutedPartOmitted,
+    UnsupportedAudioPart,
+    UnsupportedMidiMessage,
+    UnsupportedDrumHitValue,
+    UnsupportedTimelineRecord,
+    MixedSessionAndArrangement,
+    NotesShortenedAtCut,
+    UnsupportedArrangementLoop,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
