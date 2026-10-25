@@ -9,6 +9,13 @@ without extracting it to disk.
 
 ## Current capabilities
 
+- Read energyXT 3.0 projects (`.xt`): tempo, tracks, the part pool and placed
+  parts, with MIDI notes and drum hits timed as energyXT plays them.
+- Map energyXT parts to canonical Arrangement clips with diagnostics for muted
+  parts, audio parts, controllers, drum pan/cutoff values and timeline records.
+- Lay out Arrangement-only projects as Session scenes: tracks made of clips keep
+  their clips, and long single clips are cut where other tracks change content,
+  or every eight bars.
 - Read `.als` GZIP streams.
 - Detect basic Live format metadata.
 - Count MIDI, audio, group, return, and main tracks.
@@ -37,6 +44,7 @@ without extracting it to disk.
 src/
   lib.rs
   model/
+    EnergyXt.rs        energyXT source models
     Live.rs            Ableton Live source models
     Internal.rs        Canonical format-neutral model
     Note.rs            Verified Ableton Note Set JSON subset
@@ -46,9 +54,14 @@ src/
     LiveParser.rs      Public Ableton Live parser facade
     LiveParserTest.rs
     live/              Private parser state objects and builders
+    EnergyXtParser.rs  Public energyXT parser facade
+    EnergyXtParserTest.rs
+    energyxt/          Private record reader and sequence builder
     mod.rs
   mapper/
     LiveToInternalMapper.rs
+    EnergyXtToInternalMapper.rs
+    ArrangementToSessionMapper.rs  Arrangement clips laid out as scenes
     InternalToNoteMapper.rs
     livetointernal/        Private per-call mapping context
     internaltonote/        Private per-call mapping context
@@ -73,6 +86,7 @@ src/
       styles.css
 docs/
   implementation-plan.md
+  energyxt-format.md   What the energyXT reader understands
 ```
 
 As conversion is implemented, `mapper/`, `exporter/`, and destination model files
@@ -100,7 +114,15 @@ cargo run --example convert -- path/to/project.als path/to/output.ablbundle
 ```
 
 The converter prints all diagnostics and refuses to write an output bundle when any
-error diagnostic is present.
+error diagnostic is present. It also accepts an energyXT project:
+
+```bash
+cargo run --example convert -- path/to/song.xt path/to/output.ablbundle
+cargo run --example convert -- path/to/song.xt path/to/output.ablbundle --scenes 0,1,2
+```
+
+When a layout has more than Note's eight scenes, the converter lists them so that
+`--scenes` can pick up to eight.
 
 The library API exposes `parser::live::LiveParser` for inspection and Session clip
 extraction, followed by `mapper::livetointernal::LiveToInternalMapper` for canonical

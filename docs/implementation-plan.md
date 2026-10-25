@@ -137,6 +137,22 @@ The concrete conversion pipeline is:
 This avoids pairwise mappers such as `LiveNoteMapper`. A future Caustic importer only
 needs `CausticParser` and `CausticToInternalMapper`; the Note half is reused.
 
+energyXT 3.0 projects (`.xt`) are the second source. Their pipeline adds one
+canonical-to-canonical step, because energyXT has a timeline but no Session view:
+
+```text
+.xt bytes
+  -> parser/energyxt
+  -> model/energyxt
+  -> mapper/energyxttointernal       every part becomes an Arrangement clip
+  -> model/internal (Arrangement)
+  -> mapper/arrangementtosession     clips or cuts laid out as scenes
+  -> model/internal (Session)
+  -> mapper/internaltonote ...
+```
+
+See `docs/energyxt-format.md` for what the energyXT reader understands.
+
 ## Format discovery
 
 Create paired synthetic fixtures for every mapped property:
@@ -202,6 +218,33 @@ For each track and range, the mapper:
 7. preserves a loop only when it exactly represents the selected range.
 
 Session and Arrangement data are never combined automatically.
+
+### Arrangement layout (implemented for sources without a Session view)
+
+`ArrangementToSessionMapper` turns an Arrangement-only canonical project into scenes
+and clip slots without user-chosen ranges. It treats the two shapes a track can have
+differently:
+
+- **A track composed of clips** keeps them. A clip that fits a slot is used as it
+  is. When a scene range holds the same clip back to back, the slot gets that clip
+  once and it loops.
+- **A track that is one long clip** (longer than Note's 16 bars) is cut into
+  smaller clips. The cuts follow the other tracks: wherever another track changes
+  content (the start or end of a run of identical clips), the long clip is cut. A
+  clip repeated bar after bar is one run and causes no cuts. When nothing else
+  changes inside the long clip, it is cut every eight bars.
+
+Scene ranges then end at positions where no clip on any track is in the middle of
+playing. A range that would exceed 16 bars ends at the last clip edge that keeps it
+short enough. In each range a track plays its clip, or, when several different clips
+fall in the range, their content rendered as one new clip. Ranges whose tracks play
+the same clips share one scene, so a repeated verse is one scene. Notes ringing
+across a cut are shortened and reported.
+
+When the result has more than eight scenes, the Note mapper reports the limit and
+the user selects scenes (`mapSelected`, or `--scenes` in the developer converter).
+The step assumes 4/4 for its eight-bar fallback and scene names. Live Arrangement
+content can reuse it once Arrangement clips are parsed.
 
 ## Destination mapping
 
@@ -332,6 +375,10 @@ Acceptance: the generated bundle opens and plays in Note.
 
 ### 6. Arrangement conversion
 
+- Automatic Arrangement layout into scenes. Initial implementation complete
+  (`ArrangementToSessionMapper`), used by the energyXT source.
+- energyXT 3.0 source: tracks, part pool, placed parts with their offset window,
+  MIDI notes and drum hits. Initial implementation complete with synthetic tests.
 - Arrangement preview and explicit ranges.
 - Locator-derived ranges, loop expansion, cropping, rebasing, and splitting.
 

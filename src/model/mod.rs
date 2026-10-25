@@ -1,5 +1,8 @@
 //! Platform-neutral models shared by parsers, mappers, exporters, and user interfaces.
 
+#[path = "EnergyXt.rs"]
+pub mod energyxt;
+
 #[path = "Internal.rs"]
 pub mod internal;
 
